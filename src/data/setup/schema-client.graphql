@@ -1,0 +1,11 @@
+# this file defines the schema of the local state
+# should match Default State in types
+# *add new global state step 2: add new state here matching default state
+
+type Query {
+  forms: forms
+}
+
+type forms {
+  input_Email: String!
+}
