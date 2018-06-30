@@ -5,7 +5,7 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { Auth, JS } from 'aws-amplify'
 import * as yup from 'yup'
-import { AUTH } from './authConstants'
+import { AUTH } from './authUtils'
 
 // *1 define the form values interface
 interface ISigninFormValues {
@@ -13,9 +13,9 @@ interface ISigninFormValues {
   password: string
 }
 
-export interface IMySignInProps {}
+export interface ISignInProps {}
 
-export interface IMySignInState {}
+export interface ISignInState {}
 
 // *2 define yup schema for form validation
 const schemaSignup = yup.object().shape({
@@ -43,10 +43,65 @@ const formSignin = ({ errors, touched, isSubmitting }: FormikProps<ISigninFormVa
 )
 
 // *Component
-class MySignIn extends React.Component<any, IMySignInState> {
+class SignIn extends React.Component<ISignInProps & any, ISignInState> {
+  // *4 create onsubmit method
+  public signIn = async (
+    values: ISigninFormValues,
+    formikBag: FormikActions<ISigninFormValues>,
+    qryRes: QueryResult<GetLocalStatesQuery>
+  ) => {
+    formikBag.setSubmitting(true)
+    // store username in apollo link state on submit
+    if (qryRes.data && qryRes.data.forms) {
+      const newData: GetLocalStatesQuery = {
+        ...qryRes.data,
+        forms: {
+          ...qryRes.data.forms,
+          input_Email: values.email
+        }
+      }
+      qryRes.client.writeData({ data: newData })
+    }
+    // sign in user to aws conginto
+    try {
+      const user = await Auth.signIn(values.email, values.password)
+      if (user.challengeName === 'SMS_MFA' || user.challengeName === 'SOFTWARE_TOKEN_MFA') {
+        this.props.onStateChange(AUTH.CONFIRM_SIGNIN, user)
+      } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
+        this.props.onStateChange(AUTH.REQUIRE_NEW_PASSWORD, user)
+      } else if (user.challengeName === 'MFA_SETUP') {
+        this.props.onStateChange(AUTH.TOTP_SETUP, user)
+      } else {
+        this.checkContact(user)
+      }
+    } catch (err) {
+      formikBag.setSubmitting(false)
+      formikBag.setFieldValue('password', '', false)
+      // check signin api for returned object
+      formikBag.setErrors({
+        email: err.code ? err.message : '',
+        password: err.code === 'NotAuthorizedException' ? err.message : ''
+      })
+
+      if (err.code === 'UserNotConfirmedException') {
+        this.props.onStateChange(AUTH.CONFIRM_SIGNUP)
+      }
+    }
+  }
+
+  public checkContact = async (user: any) => {
+    const data = await Auth.verifiedContact(user)
+    if (!JS.isEmpty(data.verified)) {
+      this.props.onStateChange(AUTH.SIGNIN, user)
+    } else {
+      user = { ...user, ...data }
+      this.props.onStateChange(AUTH.VERIFY_CONTACT, user)
+    }
+  }
+
   public render() {
     // condition to show component
-    if ([AUTH.SIGNIN, AUTH.SIGNED_OUT, AUTH.SIGNUP].indexOf(this.props.authState) === -1) return null
+    if ([AUTH.SIGNIN, AUTH.SIGNED_OUT, AUTH.SIGNED_UP].indexOf(this.props.authState) === -1) return null
 
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
@@ -65,7 +120,7 @@ class MySignIn extends React.Component<any, IMySignInState> {
                   password: ''
                 }}
                 validationSchema={schemaSignup}
-                onSubmit={(values, formikBag) => login(values, formikBag, qryRes, this.props.onStateChange)}
+                onSubmit={(values, formikBag) => this.signIn(values, formikBag, qryRes)}
                 component={formSignin}
               />
               <button onClick={() => this.props.onStateChange(AUTH.FORGOT_PASSWORD)}>Forgot Password</button>
@@ -78,61 +133,4 @@ class MySignIn extends React.Component<any, IMySignInState> {
   }
 }
 
-// *4 create onsubmit method
-const login = async (
-  values: ISigninFormValues,
-  formikBag: FormikActions<ISigninFormValues>,
-  qryRes: QueryResult<GetLocalStatesQuery>,
-  changeState: (errMsg: string, userVal?: string) => void
-) => {
-  formikBag.setSubmitting(true)
-  // store username in apollo link state on submit
-  if (qryRes.data && qryRes.data.forms) {
-    const newData: GetLocalStatesQuery = {
-      ...qryRes.data,
-      forms: {
-        ...qryRes.data.forms,
-        input_Email: values.email
-      }
-    }
-    qryRes.client.writeData({ data: newData })
-  }
-  // sign in user to aws conginto
-  try {
-    const user = await Auth.signIn(values.email, values.password)
-    if (user.challengeName === 'SMS_MFA' || user.challengeName === 'SOFTWARE_TOKEN_MFA') {
-      changeState(AUTH.CONFIRM_SIGNIN, user)
-    } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
-      changeState(AUTH.REQUIRE_NEW_PASSWORD, user)
-    } else if (user.challengeName === 'MFA_SETUP') {
-      changeState(AUTH.TOTP_SETUP, user)
-    } else {
-      checkContact(user, changeState)
-    }
-  } catch (err) {
-    formikBag.setSubmitting(false)
-    formikBag.setFieldValue('password', '', false)
-    // check signin api for returned object
-    formikBag.setErrors({
-      email: err.code ? err.message : '',
-      password: err.code === 'NotAuthorizedException' ? err.message : ''
-    })
-
-    if (err.code === 'UserNotConfirmedException') {
-      changeState(AUTH.CONFIRM_SIGNUP)
-    }
-  }
-}
-
-const checkContact = (user: any, changeState: (errMsg: string, userVal?: string) => void) => {
-  Auth.verifiedContact(user).then(data => {
-    if (!JS.isEmpty(data.verified)) {
-      changeState(AUTH.SIGNIN, user)
-    } else {
-      user = { ...user, ...data }
-      changeState(AUTH.VERIFY_CONTACT, user)
-    }
-  })
-}
-
-export default MySignIn
+export default SignIn

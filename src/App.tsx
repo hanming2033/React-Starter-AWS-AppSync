@@ -38,18 +38,19 @@ export class App extends React.Component {
   }
 }
 
-// import { withAuthenticator } from "aws-amplify-react";
-import { ConfirmSignIn, VerifyContact, withAuthenticator } from 'aws-amplify-react'
+import { VerifyContact, withAuthenticator } from 'aws-amplify-react'
 import SignIn from './components/Auth/SignIn'
 import SignUp from './components/Auth/SignUp'
-import SignupConfirm from './components/Auth/SignupConfirm';
-import ForgotPassword from './components/Auth/ForgotPassword';
+import SignupConfirm from './components/Auth/SignupConfirm'
+import ForgotPassword from './components/Auth/ForgotPassword'
+import RequireNewPassword from './components/Auth/RequireNewPassword'
+import SigninConfirm from './components/Auth/SigninConfirm'
 // can use withAuthenticator(App) to set up fully automated auth flow. need to redo css
 export default withAuthenticator(App, true, [
   // tslint:disable-next-line:jsx-key
   <SignIn />,
   // tslint:disable-next-line:jsx-key
-  <ConfirmSignIn />,
+  <SigninConfirm />,
   // tslint:disable-next-line:jsx-key
   <VerifyContact />,
   // tslint:disable-next-line:jsx-key
@@ -57,5 +58,7 @@ export default withAuthenticator(App, true, [
   // tslint:disable-next-line:jsx-key
   <SignupConfirm />,
   // tslint:disable-next-line:jsx-key
-  <ForgotPassword />
+  <ForgotPassword />,
+  // tslint:disable-next-line:jsx-key
+  <RequireNewPassword />
 ])

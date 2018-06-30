@@ -5,7 +5,7 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { Auth } from 'aws-amplify'
 import * as yup from 'yup'
-import { AUTH } from './authConstants';
+import { AUTH } from './authUtils'
 
 // *1 define the form values interface
 interface IRequestFormValues {
@@ -18,9 +18,9 @@ interface IResetFormValues {
   confirmPassword: string
 }
 
-export interface IMySignInProps {}
+export interface IForgotPasswordProps {}
 
-export interface IMySignInState {}
+export interface IMyForgotPasswordState {}
 
 // *2 define yup schema for form validation
 const schemaRequest = yup.object().shape({
@@ -53,7 +53,7 @@ const formRequest = ({ errors, touched, isSubmitting }: FormikProps<IRequestForm
 )
 const formReset = ({ errors, touched, isSubmitting }: FormikProps<IResetFormValues>) => (
   <Form>
-    <Field name="email" placeholder="Email" />
+    <Field name="email" placeholder="Email" disabled/>
     {touched.email && errors.email}
     <br />
     <Field name="code" placeholder="Auth Code" />
@@ -69,11 +69,57 @@ const formReset = ({ errors, touched, isSubmitting }: FormikProps<IResetFormValu
   </Form>
 )
 
-class MySignIn extends React.Component<any, IMySignInState> {
-  public state = { reset: false }
+class ForgotPassword extends React.Component<any, IMyForgotPasswordState> {
+  public state = { delivery: null }
 
-  public toReset = () => {
-    this.setState({ reset: true })
+  // *4 create onsubmit method
+  public requestCode = async (
+    values: IRequestFormValues,
+    formikBag: FormikActions<IRequestFormValues>,
+    qryRes: QueryResult<GetLocalStatesQuery>
+  ) => {
+    formikBag.setSubmitting(true)
+    // store email in local state
+    if (!qryRes.data || !qryRes.data.forms) return
+    const newData = {
+      ...qryRes.data,
+      forms: {
+        ...qryRes.data.forms,
+        input_Email: values.email
+      }
+    }
+    qryRes.client.writeData({ data: newData })
+
+    try {
+      const data = await Auth.forgotPassword(values.email)
+      this.setState({ delivery: data.CodeDeliveryDetails })
+      console.log(this.state.delivery)
+      formikBag.resetForm()
+      formikBag.setSubmitting(false)
+    } catch (err) {
+      formikBag.setErrors({
+        email: err.code ? err.message : ''
+      })
+      formikBag.setFieldValue('password', '', false)
+      formikBag.setSubmitting(false)
+    }
+  }
+
+  public resetPassword = async (values: IResetFormValues, formikBag: FormikActions<IResetFormValues>) => {
+    formikBag.setSubmitting(true)
+    try {
+      await Auth.forgotPasswordSubmit(values.email, values.code, values.password)
+      formikBag.resetForm()
+      formikBag.setSubmitting(false)
+      this.setState({ delivery: null })
+      this.props.onStateChange(AUTH.SIGNIN)
+    } catch (err) {
+      formikBag.setErrors({
+        email: err.code ? err.message : ''
+      })
+      formikBag.setFieldValue('password', '', false)
+      formikBag.setSubmitting(false)
+    }
   }
 
   public render() {
@@ -98,13 +144,13 @@ class MySignIn extends React.Component<any, IMySignInState> {
                   password: '',
                   confirmPassword: ''
                 }}
-                validationSchema={this.state.reset ? schemaReset : schemaRequest}
+                validationSchema={this.state.delivery ? schemaReset : schemaRequest}
                 onSubmit={
-                  this.state.reset
-                    ? (values: any, formikBag) => resetPassword(values, formikBag)
-                    : (values, formikBag) => requestCode(values, formikBag, qryRes, this.toReset)
+                  this.state.delivery
+                    ? (values: any, formikBag) => this.resetPassword(values, formikBag)
+                    : (values, formikBag) => this.requestCode(values, formikBag, qryRes)
                 }
-                component={this.state.reset ? formReset : formRequest}
+                component={this.state.delivery ? formReset : formRequest}
               />
               <button onClick={() => this.props.onStateChange(AUTH.SIGNIN)}>Back to Sign In</button>
             </>
@@ -115,58 +161,4 @@ class MySignIn extends React.Component<any, IMySignInState> {
   }
 }
 
-// *4 create onsubmit method
-const requestCode = async (
-  values: IRequestFormValues,
-  formikBag: FormikActions<IRequestFormValues>,
-  qryRes: QueryResult<GetLocalStatesQuery>,
-  codeRequested: () => void
-) => {
-  formikBag.setSubmitting(true)
-  // store email in local state
-  if (!qryRes.data || !qryRes.data.forms) return
-  const newData = {
-    ...qryRes.data,
-    forms: {
-      ...qryRes.data.forms,
-      input_Email: values.email
-    }
-  }
-  qryRes.client.writeData({ data: newData })
-
-  try {
-    const res = await Auth.forgotPassword(values.email)
-    formikBag.resetForm()
-    formikBag.setSubmitting(false)
-    codeRequested()
-    console.log('Login Successful: ', res)
-  } catch (err) {
-    // check signin api for returned object
-    formikBag.setErrors({
-      email: err.code ? err.message : ''
-    })
-    formikBag.setFieldValue('password', '', false)
-    formikBag.setSubmitting(false)
-    console.log('Login Fail ', err)
-  }
-}
-
-const resetPassword = async (values: IResetFormValues, formikBag: FormikActions<IResetFormValues>) => {
-  formikBag.setSubmitting(true)
-  try {
-    const res = await Auth.forgotPasswordSubmit(values.email, values.code, values.password)
-    formikBag.resetForm()
-    formikBag.setSubmitting(false)
-    console.log('Login Successful: ', res)
-  } catch (err) {
-    // check signin api for returned object
-    formikBag.setErrors({
-      email: err.code ? err.message : ''
-    })
-    formikBag.setFieldValue('password', '', false)
-    formikBag.setSubmitting(false)
-    console.log('Login Fail ', err)
-  }
-}
-
-export default MySignIn
+export default ForgotPassword

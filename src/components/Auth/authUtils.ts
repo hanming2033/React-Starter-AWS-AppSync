@@ -7,5 +7,12 @@ export const AUTH = {
   TOTP_SETUP: 'TOTPSetup',
   CONFIRM_SIGNUP: 'confirmSignUp',
   VERIFY_CONTACT: 'verifyContact',
-  SIGNED_OUT: 'signedOut'
+  SIGNED_OUT: 'signedOut',
+  SIGNED_UP: 'signedUp'
+}
+
+export interface IAmplifyReact {
+  onStateChange: (authStage: string, data?: any) => void
+  authState: string
+  authData: any
 }
