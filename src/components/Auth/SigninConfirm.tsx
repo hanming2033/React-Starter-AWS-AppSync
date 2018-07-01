@@ -5,7 +5,7 @@ import * as yup from 'yup'
 import { Query, QueryResult } from 'react-apollo'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { AUTH, IAmplifyReact } from './authUtils'
+import { AUTH } from './authUtils'
 
 interface IAuthFormValues {
   email: string
