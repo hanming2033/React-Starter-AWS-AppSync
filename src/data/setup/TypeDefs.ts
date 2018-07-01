@@ -4,10 +4,15 @@
 const typeDefs = `
   type Query {
     forms: forms
+    nav: nav
   }
 
   type forms {
     input_Email: String!
+  }
+
+  type nav {
+    nextPath: String!
   }
 `
 export default typeDefs

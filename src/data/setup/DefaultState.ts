@@ -12,12 +12,21 @@ interface IState {
     __typename: string
     input_Email: string
   }
+  nav: {
+    __typename: string
+
+    nextPath: string
+  }
 }
 
 const defaultState: IState = {
   forms: {
     __typename: types.FORMS,
     input_Email: ''
+  },
+  nav: {
+    __typename: types.NAV,
+    nextPath: ''
   }
 }
 

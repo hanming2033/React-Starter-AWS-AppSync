@@ -8,5 +8,9 @@ export const GET_LOCAL_STATES = gql`
       __typename
       input_Email
     }
+    nav @client {
+      __typename
+      nextPath
+    }
   }
 `

@@ -3,10 +3,9 @@ import { Form, Field, Formik, FormikActions, FormikProps } from 'formik'
 import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
-import * as yup from 'yup'
-import { validComponents } from './AuthenticatorRouter'
 import { Auth } from 'aws-amplify'
-import { AuthProxy } from './AuthProxy'
+import * as yup from 'yup'
+import { AUTH } from './authUtils'
 
 // *1 define the form values interface
 interface IRequestFormValues {
@@ -19,11 +18,9 @@ interface IResetFormValues {
   confirmPassword: string
 }
 
-export interface IForgotPasswordProps {
-  changeComponentTo: (newComponent: validComponents) => void
-}
+export interface IForgotPasswordProps {}
 
-export interface IForgotPasswordState {}
+export interface IMyForgotPasswordState {}
 
 // *2 define yup schema for form validation
 const schemaRequest = yup.object().shape({
@@ -41,7 +38,7 @@ const schemaReset = yup.object().shape({
   password: yup.string().required('Password is required'),
   confirmPassword: yup
     .string()
-    .oneOf([yup.ref('password'), null], 'Passwords must match')
+    .oneOf([yup.ref('password'), null])
     .required('Password confirm is required')
 })
 
@@ -56,7 +53,7 @@ const formRequest = ({ errors, touched, isSubmitting }: FormikProps<IRequestForm
 )
 const formReset = ({ errors, touched, isSubmitting }: FormikProps<IResetFormValues>) => (
   <Form>
-    <Field name="email" placeholder="Email" disabled />
+    <Field name="email" placeholder="Email" disabled/>
     {touched.email && errors.email}
     <br />
     <Field name="code" placeholder="Auth Code" />
@@ -72,7 +69,7 @@ const formReset = ({ errors, touched, isSubmitting }: FormikProps<IResetFormValu
   </Form>
 )
 
-class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswordState> {
+class ForgotPassword extends React.Component<any, IMyForgotPasswordState> {
   public state = { delivery: null }
 
   // *4 create onsubmit method
@@ -93,14 +90,15 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
     }
     qryRes.client.writeData({ data: newData })
 
-    const res = await AuthProxy.requestForgotPasswordCode(values.email)
-    if (res.data) {
-      this.setState({ delivery: res.data.CodeDeliveryDetails })
+    try {
+      const data = await Auth.forgotPassword(values.email)
+      this.setState({ delivery: data.CodeDeliveryDetails })
+      console.log(this.state.delivery)
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-    } else if (res.error) {
+    } catch (err) {
       formikBag.setErrors({
-        email: (res.error.message as string).includes('Username/client') ? 'Email Not Found' : ''
+        email: err.code ? err.message : ''
       })
       formikBag.setFieldValue('password', '', false)
       formikBag.setSubmitting(false)
@@ -109,19 +107,15 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
 
   public resetPassword = async (values: IResetFormValues, formikBag: FormikActions<IResetFormValues>) => {
     formikBag.setSubmitting(true)
-    const res = AuthProxy.resetPassword(values.email, values.code, values.password)
-    // TODO: add actions for res
     try {
       await Auth.forgotPasswordSubmit(values.email, values.code, values.password)
       formikBag.resetForm()
       formikBag.setSubmitting(false)
       this.setState({ delivery: null })
-      this.props.changeComponentTo('signIn')
+      this.props.onStateChange(AUTH.SIGNIN)
     } catch (err) {
       formikBag.setErrors({
-        code: err.code ? err.message : '',
-        password: (err.message as string).includes('password') ? err.message : '',
-        confirmPassword: (err.message as string).includes('password') ? err.message : ''
+        email: err.code ? err.message : ''
       })
       formikBag.setFieldValue('password', '', false)
       formikBag.setSubmitting(false)
@@ -129,6 +123,9 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
   }
 
   public render() {
+    // condition to show component
+    if (this.props.authState !== AUTH.FORGOT_PASSWORD) return null
+
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
@@ -155,7 +152,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
                 }
                 component={this.state.delivery ? formReset : formRequest}
               />
-              <button onClick={() => this.props.changeComponentTo('signIn')}>Back to Sign In</button>
+              <button onClick={() => this.props.onStateChange(AUTH.SIGNIN)}>Back to Sign In</button>
             </>
           )
         }}
