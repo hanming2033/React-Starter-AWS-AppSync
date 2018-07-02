@@ -4,7 +4,7 @@ import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { validComponents } from './AuthenticatorRouter'
+import { validComponents, TChangeComponent } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxy'
 
 // *1 define the form values interface
@@ -19,7 +19,7 @@ interface IResetFormValues {
 }
 
 export interface IForgotPasswordProps {
-  changeComponentTo: (newComponent: validComponents) => void
+  changeComponentTo: TChangeComponent
 }
 
 export interface IForgotPasswordState {}

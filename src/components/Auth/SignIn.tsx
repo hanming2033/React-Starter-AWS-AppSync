@@ -6,7 +6,7 @@ import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { RouteComponentProps } from 'react-router'
 import { AuthProxy, checkContact } from './AuthProxy'
-import { validComponents } from './AuthenticatorRouter'
+import {  TChangeComponent } from './AuthenticatorRouter'
 
 // *1 define the form values interface
 interface ISigninFormValues {
@@ -17,7 +17,7 @@ interface ISigninFormValues {
 export interface ISignInProps {
   referrer: string
   toggleAuth: () => void
-  changeComponentTo: (newComponent: validComponents) => void
+  changeComponentTo: TChangeComponent
 }
 
 export interface ISignInState {}
@@ -73,13 +73,15 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
       if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
         this.props.changeComponentTo('confirmSignIn')
       } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
-        this.props.changeComponentTo('requireNewPassword')
+        this.props.changeComponentTo('requireNewPassword', res.data)
       } else if (res.data.challengeName === 'MFA_SETUP') {
         this.props.changeComponentTo('TOTPSetup')
       } else {
         checkContact(res.data, this.props.changeComponentTo)
       }
       if (res.isAuthenticated) this.props.toggleAuth()
+      // TODO: check if should authenticated after checking in checkContact
+      // TODO: should be no toggleAuth() beside checkContact
     } else if (res.error) {
       console.log(res)
       formikBag.setSubmitting(false)

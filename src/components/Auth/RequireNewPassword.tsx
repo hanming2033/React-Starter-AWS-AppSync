@@ -3,9 +3,9 @@ import { Form, Field, Formik, FormikActions, FormikProps } from 'formik'
 import { Query } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
-import { Auth, JS } from 'aws-amplify'
 import * as yup from 'yup'
-import { validComponents } from './AuthenticatorRouter'
+import { validComponents, TChangeComponent } from './AuthenticatorRouter'
+import { AuthProxy } from './AuthProxy'
 
 // *1 define the form values interface
 interface IRequireNewPasswordValues {
@@ -15,7 +15,8 @@ interface IRequireNewPasswordValues {
 }
 
 export interface IRequireNewPasswordProps {
-  changeComponentTo: (newComponent: validComponents) => void
+  changeComponentTo: TChangeComponent
+  authData?: any
 }
 
 export interface IRequireNewPasswordState {}
@@ -47,37 +48,28 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
   public changePassword = async (values: IRequireNewPasswordValues, formikBag: FormikActions<IRequireNewPasswordValues>) => {
     formikBag.setSubmitting(true)
     const userData = this.props.authData
-    // TODO: add current user from signin const user = await Auth.signIn(values.email, values.password)
     const { requiredAttributes } = userData.challengeParam
-    try {
-      const user = await Auth.completeNewPassword(userData, values.password, requiredAttributes)
+    const res = await AuthProxy.setNewPassword(userData, values.password, requiredAttributes)
+
+    if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      if (user.challengeName === 'SMS_MFA') {
+      if (res.data.challengeName === 'SMS_MFA') {
         this.props.changeComponentTo('confirmSignIn')
-      } else if (user.challengeName === 'MFA_SETUP') {
+      } else if (res.data.challengeName === 'MFA_SETUP') {
         this.props.changeComponentTo('TOTPSetup')
       } else {
-        this.props.changeComponentTo(user)
+        this.props.changeComponentTo('signIn')
+        alert('investigate where should this point to....')
       }
-    } catch (err) {
+    } else if (res.error) {
       formikBag.setErrors({
-        password: err.code ? err.message : '',
-        confirmPassword: err.code ? err.message : ''
+        password: res.error.code ? res.error.message : '',
+        confirmPassword: res.error.code ? res.error.message : ''
       })
       formikBag.setFieldValue('password', '', false)
       formikBag.setFieldValue('confirmPassword', '', false)
       formikBag.setSubmitting(false)
-    }
-  }
-
-  public checkContact = async (user: any) => {
-    const data = await Auth.verifiedContact(user)
-    if (!JS.isEmpty(data.verified)) {
-      this.props.changeComponentTo('signIn')
-    } else {
-      user = { ...user, ...data }
-      this.props.changeComponentTo('verifyContact')
     }
   }
 

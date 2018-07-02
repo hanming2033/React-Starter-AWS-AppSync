@@ -1,5 +1,5 @@
 import { Auth, JS } from 'aws-amplify'
-import { validComponents } from './AuthenticatorRouter'
+import { validComponents, TChangeComponent } from './AuthenticatorRouter'
 
 interface IAuthResult {
   isAuthenticated: boolean
@@ -13,6 +13,7 @@ interface IAuthProxy {
   checkAuthState: () => Promise<IAuthResult>
   requestForgotPasswordCode: (email: string) => Promise<IAuthResult>
   resetPassword: (email: string, authCode: string, password: string) => Promise<IAuthResult>
+  setNewPassword: (user: any, password: string, requiredAttributes: any) => Promise<any>
 }
 
 export const AuthProxy: IAuthProxy = {
@@ -58,15 +59,24 @@ export const AuthProxy: IAuthProxy = {
     } catch (error) {
       return { isAuthenticated: false, error }
     }
+  },
+  setNewPassword: async (user, password, requiredAttributes) => {
+    try {
+      const data = await Auth.completeNewPassword(user, password, requiredAttributes)
+      return { isAuthenticated: false, data }
+    } catch (error) {
+      return { isAuthenticated: false, error }
+    }
   }
 }
 
-export const checkContact = async (user: any, changeComponentTo: (newComponent: validComponents) => void) => {
+// TODO: set auth here. this shld be the final check
+export const checkContact = async (user: any, changeComponentTo: TChangeComponent) => {
   const data = await Auth.verifiedContact(user)
   if (!JS.isEmpty(data.verified)) {
-    changeComponentTo('signIn')
+    changeComponentTo('signIn', user)
   } else {
     user = { ...user, ...data }
-    changeComponentTo('verifyContact')
+    changeComponentTo('verifyContact', user)
   }
 }
