@@ -5,7 +5,6 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { validComponents } from './AuthenticatorRouter'
-import { Auth } from 'aws-amplify'
 import { AuthProxy } from './AuthProxy'
 
 // *1 define the form values interface
@@ -109,19 +108,18 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
 
   public resetPassword = async (values: IResetFormValues, formikBag: FormikActions<IResetFormValues>) => {
     formikBag.setSubmitting(true)
-    const res = AuthProxy.resetPassword(values.email, values.code, values.password)
-    // TODO: add actions for res
-    try {
-      await Auth.forgotPasswordSubmit(values.email, values.code, values.password)
+    const res = await AuthProxy.resetPassword(values.email, values.code, values.password)
+    console.log(res)
+    if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
       this.setState({ delivery: null })
       this.props.changeComponentTo('signIn')
-    } catch (err) {
+    } else if (res.error) {
       formikBag.setErrors({
-        code: err.code ? err.message : '',
-        password: (err.message as string).includes('password') ? err.message : '',
-        confirmPassword: (err.message as string).includes('password') ? err.message : ''
+        code: res.error.code ? res.error.message : '',
+        password: (res.error.message as string).includes('password') ? res.error.message : '',
+        confirmPassword: (res.error.message as string).includes('password') ? res.error.message : ''
       })
       formikBag.setFieldValue('password', '', false)
       formikBag.setSubmitting(false)

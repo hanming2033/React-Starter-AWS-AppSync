@@ -5,7 +5,7 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { Auth, JS } from 'aws-amplify'
 import * as yup from 'yup'
-import { validComponents } from './AuthenticatorRouter'
+import { AUTH } from './authUtils'
 
 // *1 define the form values interface
 interface IRequireNewPasswordValues {
@@ -14,9 +14,7 @@ interface IRequireNewPasswordValues {
   confirmPassword: string
 }
 
-export interface IRequireNewPasswordProps {
-  changeComponentTo: (newComponent: validComponents) => void
-}
+export interface IRequireNewPasswordProps {}
 
 export interface IRequireNewPasswordState {}
 
@@ -42,23 +40,22 @@ const formReset = ({ errors, touched, isSubmitting }: FormikProps<IRequireNewPas
   </Form>
 )
 
-class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequireNewPasswordState> {
+class RequireNewPassword extends React.Component<any, IRequireNewPasswordState> {
   // *4 create onsubmit method
-  public changePassword = async (values: IRequireNewPasswordValues, formikBag: FormikActions<IRequireNewPasswordValues>) => {
+  public resetPassword = async (values: IRequireNewPasswordValues, formikBag: FormikActions<IRequireNewPasswordValues>) => {
     formikBag.setSubmitting(true)
     const userData = this.props.authData
-    // TODO: add current user from signin const user = await Auth.signIn(values.email, values.password)
     const { requiredAttributes } = userData.challengeParam
     try {
       const user = await Auth.completeNewPassword(userData, values.password, requiredAttributes)
       formikBag.resetForm()
       formikBag.setSubmitting(false)
       if (user.challengeName === 'SMS_MFA') {
-        this.props.changeComponentTo('confirmSignIn')
+        this.props.onStateChange(AUTH.CONFIRM_SIGNIN, user)
       } else if (user.challengeName === 'MFA_SETUP') {
-        this.props.changeComponentTo('TOTPSetup')
+        this.props.onStateChange(AUTH.TOTP_SETUP, user)
       } else {
-        this.props.changeComponentTo(user)
+        this.props.onStateChange(user)
       }
     } catch (err) {
       formikBag.setErrors({
@@ -74,14 +71,17 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
   public checkContact = async (user: any) => {
     const data = await Auth.verifiedContact(user)
     if (!JS.isEmpty(data.verified)) {
-      this.props.changeComponentTo('signIn')
+      this.props.onStateChange(AUTH.SIGNIN, user)
     } else {
       user = { ...user, ...data }
-      this.props.changeComponentTo('verifyContact')
+      this.props.onStateChange(AUTH.VERIFY_CONTACT, user)
     }
   }
 
   public render() {
+    // condition to show component
+    if (this.props.authState !== AUTH.REQUIRE_NEW_PASSWORD) return null
+
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
@@ -99,7 +99,7 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
                   confirmPassword: ''
                 }}
                 validationSchema={schemaReset}
-                onSubmit={(values: any, formikBag) => this.changePassword(values, formikBag)}
+                onSubmit={(values: any, formikBag) => this.resetPassword(values, formikBag)}
                 component={formReset}
               />
             </>

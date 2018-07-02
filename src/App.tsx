@@ -31,7 +31,7 @@ const AuthButton = withRouter(
   ({ history }) =>
     true ? (
       <p>
-        Welcome! <button onClick={() => AuthProxy.signOut()}>Sign Out</button>{' '}
+        Welcome! <button onClick={() => AuthProxy.signOut().then(() => history.replace('/'))}>Sign Out</button>{' '}
       </p>
     ) : (
       <p>You are not logged in</p>

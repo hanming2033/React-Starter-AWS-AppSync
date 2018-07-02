@@ -53,8 +53,8 @@ export const AuthProxy: IAuthProxy = {
   },
   resetPassword: async (email, authCode, password) => {
     try {
-      const data = await Auth.forgotPasswordSubmit(email, authCode, password)
-      return { isAuthenticated: false, data }
+      await Auth.forgotPasswordSubmit(email, authCode, password)
+      return { isAuthenticated: false, data: { passwordChanged: true } }
     } catch (error) {
       return { isAuthenticated: false, error }
     }

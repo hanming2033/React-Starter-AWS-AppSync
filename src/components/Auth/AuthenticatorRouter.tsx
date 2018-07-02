@@ -3,6 +3,7 @@ import React from 'react'
 import { AuthProxy } from './AuthProxy'
 import Login from './SignIn'
 import ForgotPassword from './ForgotPassword'
+import RequireNewPassword from './RequireNewPassword'
 
 interface IProtectedRouteProps {
   component:
@@ -74,6 +75,8 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
         )
       case 'forgotPassword':
         return <ForgotPassword {...props} changeComponentTo={this.changeComponentTo} />
+      case 'requireNewPassword':
+        return <RequireNewPassword {...props} changeComponentTo={this.changeComponentTo} />
       default:
         return null
     }
