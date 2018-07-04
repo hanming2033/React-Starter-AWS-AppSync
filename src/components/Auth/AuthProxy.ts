@@ -10,11 +10,31 @@ interface IAuthResult {
 }
 export type TChanllenges = 'SMS_MFA' | 'MFA_SETUP' | 'SOFTWARE_TOKEN_MFA' | 'NEW_PASSWORD_REQUIRED' | 'TOTP' | 'SMS'
 
+interface IUserProps {
+  username: string
+  password: string
+  attributes: {
+    name: string
+    phone_number: string
+    email: string
+  }
+}
+
 export interface ICognitoUser {
   challengeName: TChanllenges
 }
 
 export const AuthProxy = {
+  signUp: async (userProperties: IUserProps) => {
+    try {
+      const data = await Auth.signUp(userProperties)
+      console.log('Proxy signUp Fail : ', data)
+      return { isAuthenticated: false, data }
+    } catch (error) {
+      console.log('Proxy signUp Fail : ', error)
+      return { isAuthenticated: false, error }
+    }
+  },
   signIn: async (username: string, password: string): Promise<IAuthResult> => {
     try {
       const data = await Auth.signIn(username, password)

@@ -4,7 +4,7 @@ import { AuthProxy } from './AuthProxy'
 import Signin from './SignIn'
 import ForgotPassword from './ForgotPassword'
 import RequireNewPassword from './RequireNewPassword'
-import Signup from './---SignUp'
+import Signup from './SignUp'
 
 interface IProtectedRouteProps {
   component:
@@ -68,6 +68,7 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
   }
 
   public genAuthComp = (componentToShow: validComponents, props: any) => {
+    console.log('AuthenticatorRouter Switching routes... ', componentToShow)
     switch (componentToShow) {
       case 'signIn':
         return (
@@ -85,7 +86,7 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
           <RequireNewPassword {...props} setAuth={this.setAuth} authData={this.state.authData} changeComponentTo={this.changeComponentTo} />
         )
       case 'signUp':
-        return <Signup />
+        return <Signup changeComponentTo={this.changeComponentTo} />
       default:
         return null
     }

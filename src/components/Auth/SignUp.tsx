@@ -1,16 +1,20 @@
 import * as React from 'react'
-import { Auth } from 'aws-amplify'
 import { Form, Field, FormikProps, Formik, FormikActions } from 'formik'
 import * as yup from 'yup'
 import { Query, QueryResult } from 'react-apollo'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { AUTH } from './authUtils'
+import { TChangeComponent } from './AuthenticatorRouter'
+import { AuthProxy } from './AuthProxy'
 
 interface ISignupFormValues {
   email: string
   password: string
   phone: string
+}
+
+export interface ISignupProps {
+  changeComponentTo: TChangeComponent
 }
 
 export interface ISignupState {}
@@ -46,7 +50,7 @@ const FormSignup = (formikProps: FormikProps<ISignupFormValues>) => (
   </Form>
 )
 
-class Signup extends React.Component<any, ISignupState> {
+class Signup extends React.Component<ISignupProps, ISignupState> {
   // method to register user in AWS Cognito
   public signupSubmit = async (
     values: ISignupFormValues,
@@ -65,32 +69,29 @@ class Signup extends React.Component<any, ISignupState> {
       }
       qryRes.client.writeData({ data: newData })
     }
-    // sign up to aws
-    try {
-      const res = await Auth.signUp({
-        username: values.email,
-        password: values.password,
-        attributes: {
-          name: 'hanming',
-          phone_number: values.phone,
-          email: values.email
-        }
-      })
+
+    const res = await AuthProxy.signUp({
+      username: values.email,
+      password: values.password,
+      attributes: {
+        name: 'name',
+        phone_number: values.phone,
+        email: values.email
+      }
+    })
+
+    if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      this.props.onStateChange(AUTH.CONFIRM_SIGNUP)
-      console.log('Signup Successful: ', res)
-    } catch (err) {
-      console.log(err)
-      // check signin api for returned object
+      this.props.changeComponentTo('confirmSignUp')
+    } else if (res.error) {
       formikBag.setErrors({
-        email: (err.message as string).includes('email') ? err.message : '',
-        password: (err.message as string).includes('password') ? err.message : '',
-        phone: (err.message as string).includes('phone number') ? err.message : ''
+        email: (res.error.message as string).includes('email') ? res.error.message : '',
+        password: (res.error.message as string).includes('password') ? res.error.message : '',
+        phone: (res.error.message as string).includes('phone number') ? res.error.message : ''
       })
       formikBag.setFieldValue('password', '', false)
       formikBag.setSubmitting(false)
-      console.log(`Signup Failed: `, err)
     }
   }
 
@@ -113,8 +114,8 @@ class Signup extends React.Component<any, ISignupState> {
                 onSubmit={(values, formikBag) => this.signupSubmit(values, formikBag, qryRes)}
                 component={FormSignup}
               />
-              <button onClick={() => this.props.onStateChange(AUTH.CONFIRM_SIGNUP)}>Confirm a Code</button>
-              <button onClick={() => this.props.onStateChange(AUTH.SIGNIN)}>Go to SignIn</button>
+              <button onClick={() => this.props.changeComponentTo('confirmSignUp')}>Confirm a Code</button>
+              <button onClick={() => this.props.changeComponentTo('signIn')}>Go to SignIn</button>
             </>
           )
         }}
