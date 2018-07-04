@@ -95,7 +95,9 @@ class Signup extends React.Component<any, ISignupState> {
   }
 
   public render() {
-    console.log('signup')
+    // condition to show component
+    if (this.props.authState !== AUTH.SIGNUP) return null
+
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES}>
         {qryRes => {

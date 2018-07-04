@@ -1,9 +1,10 @@
 import { Route, RouteProps, RouteComponentProps, StaticContext } from 'react-router'
 import React from 'react'
 import { AuthProxy } from './AuthProxy'
-import Login from './SignIn'
+import Signin from './SignIn'
 import ForgotPassword from './ForgotPassword'
 import RequireNewPassword from './RequireNewPassword'
+import Signup from './---SignUp'
 
 interface IProtectedRouteProps {
   component:
@@ -70,7 +71,7 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
     switch (componentToShow) {
       case 'signIn':
         return (
-          <Login
+          <Signin
             {...props}
             changeComponentTo={this.changeComponentTo}
             setAuth={this.setAuth}
@@ -83,6 +84,8 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
         return (
           <RequireNewPassword {...props} setAuth={this.setAuth} authData={this.state.authData} changeComponentTo={this.changeComponentTo} />
         )
+      case 'signUp':
+        return <Signup />
       default:
         return null
     }
