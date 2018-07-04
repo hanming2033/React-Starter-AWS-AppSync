@@ -4,7 +4,7 @@ import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { validComponents, TChangeComponent } from './AuthenticatorRouter'
+import { TChangeComponent } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxy'
 
 // *1 define the form values interface
@@ -36,7 +36,7 @@ const schemaReset = yup.object().shape({
     .string()
     .email('Not a valid email')
     .required('Email is required'),
-  code: yup.string().required(),
+  code: yup.string().required('Authentication code is required'),
   password: yup.string().required('Password is required'),
   confirmPassword: yup
     .string()
@@ -94,7 +94,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
 
     const res = await AuthProxy.requestForgotPasswordCode(values.email)
     if (res.data) {
-      this.setState({ delivery: res.data.CodeDeliveryDetails })
+      this.setState({ delivery: res.data.CodeDeliveryDetails }) // *good
       formikBag.resetForm()
       formikBag.setSubmitting(false)
     } else if (res.error) {
@@ -103,18 +103,21 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
       })
       formikBag.setFieldValue('password', '', false)
       formikBag.setSubmitting(false)
+      if (res.error && (res.error.message as string).includes('no registered/verified')) {
+        this.props.changeComponentTo('confirmSignUp') // *good
+      }
     }
   }
 
   public resetPassword = async (values: IResetFormValues, formikBag: FormikActions<IResetFormValues>) => {
     formikBag.setSubmitting(true)
     const res = await AuthProxy.resetPassword(values.email, values.code, values.password)
-    console.log(res)
+
     if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
       this.setState({ delivery: null })
-      this.props.changeComponentTo('signIn')
+      this.props.changeComponentTo('signIn') // *good
     } else if (res.error) {
       formikBag.setErrors({
         code: res.error.code ? res.error.message : '',

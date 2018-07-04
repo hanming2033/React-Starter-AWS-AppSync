@@ -5,8 +5,8 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { RouteComponentProps } from 'react-router'
-import { AuthProxy, checkContact } from './AuthProxy'
-import {  TChangeComponent } from './AuthenticatorRouter'
+import { AuthProxy, verifyUser } from './AuthProxy'
+import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
 
 // *1 define the form values interface
 interface ISigninFormValues {
@@ -16,7 +16,7 @@ interface ISigninFormValues {
 
 export interface ISignInProps {
   referrer: string
-  toggleAuth: () => void
+  setAuth: TSetAuth
   changeComponentTo: TChangeComponent
 }
 
@@ -69,21 +69,14 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
     }
     const res = await AuthProxy.signIn(values.email, values.password)
     if (res.data) {
-      console.log(res)
       if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
-        this.props.changeComponentTo('confirmSignIn')
+        this.props.changeComponentTo('confirmSignIn') // TODO: check if mfa works
       } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
-        this.props.changeComponentTo('requireNewPassword', res.data)
-      } else if (res.data.challengeName === 'MFA_SETUP') {
-        this.props.changeComponentTo('TOTPSetup')
+        this.props.changeComponentTo('requireNewPassword', res.data) // *good
       } else {
-        checkContact(res.data, this.props.changeComponentTo)
+        verifyUser(res.data, this.props.changeComponentTo, this.props.setAuth) // *good
       }
-      if (res.isAuthenticated) this.props.toggleAuth()
-      // TODO: check if should authenticated after checking in checkContact
-      // TODO: should be no toggleAuth() beside checkContact
     } else if (res.error) {
-      console.log(res)
       formikBag.setSubmitting(false)
       formikBag.setFieldValue('password', '', false)
       formikBag.setErrors({

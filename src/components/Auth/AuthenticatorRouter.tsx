@@ -26,6 +26,7 @@ export type validComponents =
 // | 'signedUp'
 
 export type TChangeComponent = (newComponent: validComponents, userData?: any) => void
+export type TSetAuth = (isAuthenticated: boolean) => void
 
 interface IProtectedRouteState {
   isAuthenticated: boolean
@@ -39,11 +40,9 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
     authData: null,
     componentToShow: 'signIn' as validComponents
   }
-  // TODO: change to setAuth
-  public toggleAuth = () => {
-    this.setState(prevState => ({
-      isAuthenticated: !prevState.isAuthenticated
-    }))
+
+  public setAuth: TSetAuth = isAuthenticated => {
+    this.setState({ isAuthenticated })
   }
 
   public changeComponentTo: TChangeComponent = (component, userData) => {
@@ -74,14 +73,16 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
           <Login
             {...props}
             changeComponentTo={this.changeComponentTo}
-            toggleAuth={this.toggleAuth}
+            setAuth={this.setAuth}
             referrer={location ? location.pathname : '/'}
           />
         )
       case 'forgotPassword':
         return <ForgotPassword {...props} changeComponentTo={this.changeComponentTo} />
       case 'requireNewPassword':
-        return <RequireNewPassword {...props} authData={this.state.authData} changeComponentTo={this.changeComponentTo} />
+        return (
+          <RequireNewPassword {...props} setAuth={this.setAuth} authData={this.state.authData} changeComponentTo={this.changeComponentTo} />
+        )
       default:
         return null
     }
