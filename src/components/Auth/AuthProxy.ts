@@ -28,10 +28,20 @@ export const AuthProxy = {
   signUp: async (userProperties: IUserProps) => {
     try {
       const data = await Auth.signUp(userProperties)
-      console.log('Proxy signUp Fail : ', data)
+      console.log('Proxy signUp Success : ', data)
       return { isAuthenticated: false, data }
     } catch (error) {
       console.log('Proxy signUp Fail : ', error)
+      return { isAuthenticated: false, error }
+    }
+  },
+  confirmSignUp: async (email: string, authCode: string) => {
+    try {
+      const data = await Auth.confirmSignUp(email, authCode)
+      console.log('Proxy confirmSignup Success : ', data)
+      return { isAuthenticated: false, data }
+    } catch (error) {
+      console.log('Proxy confirmSignup Fail : ', error)
       return { isAuthenticated: false, error }
     }
   },

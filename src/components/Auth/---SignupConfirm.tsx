@@ -5,8 +5,7 @@ import * as yup from 'yup'
 import { Query } from 'react-apollo'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { TChangeComponent } from './AuthenticatorRouter'
-import { AuthProxy } from './AuthProxy'
+import { AUTH } from './authUtils'
 
 interface IAuthFormValues {
   email: string
@@ -14,10 +13,6 @@ interface IAuthFormValues {
 }
 
 export interface ISignupConfirmState {}
-
-export interface ISignupConfirmProps {
-  changeComponentTo: TChangeComponent
-}
 
 // yup schema for signup form validation
 const schemaConfirm = yup.object().shape({
@@ -40,18 +35,19 @@ const FormConfirm = (formikProps: FormikProps<IAuthFormValues>) => (
   </>
 )
 
-class SignupConfirm extends React.Component<ISignupConfirmProps, ISignupConfirmState> {
+class SignupConfirm extends React.Component<any, ISignupConfirmState> {
   // method to register user in AWS Cognito
   public confirm = async (values: IAuthFormValues, formikBag: FormikActions<IAuthFormValues>) => {
     formikBag.setSubmitting(true)
-    const res = await AuthProxy.confirmSignUp(values.email, values.authCode)
-    if (res.data) {
+    try {
+      await Auth.confirmSignUp(values.email, values.authCode)
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      this.props.changeComponentTo('signIn')
-    } else if (res.error) {
+      this.props.onStateChange(AUTH.SIGNIN)
+    } catch (err) {
+      // check signin api for returned object
       formikBag.setErrors({
-        authCode: res.error.message
+        authCode: err.message
       })
       formikBag.setSubmitting(false)
       formikBag.setFieldValue('authCode', '', false)
@@ -64,6 +60,9 @@ class SignupConfirm extends React.Component<ISignupConfirmProps, ISignupConfirmS
   }
 
   public render() {
+    // condition to show component
+    if (this.props.authState !== AUTH.CONFIRM_SIGNUP) return null
+
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES}>
         {qryRes => {
@@ -82,7 +81,7 @@ class SignupConfirm extends React.Component<ISignupConfirmProps, ISignupConfirmS
                 component={FormConfirm}
               />
               <button onClick={() => this.resend(email)}>Resend Code</button>
-              <button onClick={() => this.props.changeComponentTo('signIn')}>Go to SignIn</button>
+              <button onClick={() => this.props.onStateChange(AUTH.SIGNIN)}>Go to SignIn</button>
             </>
           )
         }}
