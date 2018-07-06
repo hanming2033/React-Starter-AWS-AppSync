@@ -2,21 +2,24 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import App from './App'
 import './index.css'
+import registerServiceWorker from './registerServiceWorker'
 import { ApolloProvider } from 'react-apollo'
 import { ApolloLink } from 'apollo-link'
 // *aws amplify imports - download from mobile hub
-import { Auth } from 'aws-amplify'
+import Amplify, { Auth } from 'aws-amplify'
+import awsconfig from './aws-exports'
 // *aws appsync imports - download from AppSync
+import { Rehydrated } from 'aws-appsync-react'
 import AWSAppSyncClient, { createAppSyncLink, createLinkWithCache } from 'aws-appsync'
 import { withClientState } from 'apollo-link-state'
 import appSyncConfig from './AppSync.js'
+
+// *configure using mobilehub export
+Amplify.configure(awsconfig)
+
 // import local state
 import defaultState from './data/setup/DefaultState'
 import typeDefs from './data/setup/TypeDefs'
-// import { withAuthenticator } from 'aws-amplify-react'
-// other imports
-import registerServiceWorker from './registerServiceWorker'
-
 
 // create local state
 const stateLink = createLinkWithCache((cache: any) =>
@@ -47,10 +50,11 @@ const link = ApolloLink.from([stateLink, appSyncLink])
 
 const client = new AWSAppSyncClient({}, { link })
 
-
 ReactDOM.render(
   <ApolloProvider client={client}>
-    <App />
+    <Rehydrated>
+      <App />
+    </Rehydrated>
   </ApolloProvider>,
   document.getElementById('root') as HTMLElement
 )

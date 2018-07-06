@@ -24,8 +24,6 @@ export type validComponents =
   | 'requireNewPassword'
   | 'verifyContact'
   | 'TOTPSetup'
-// | 'signedOut'
-// | 'signedUp'
 
 export type TChangeComponent = (newComponent: validComponents, userData?: any) => void
 export type TSetAuth = (isAuthenticated: boolean) => void
