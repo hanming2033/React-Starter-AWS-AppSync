@@ -5,6 +5,7 @@ import Signin from './SignIn'
 import ForgotPassword from './ForgotPassword'
 import RequireNewPassword from './RequireNewPassword'
 import Signup from './SignUp'
+import SignupConfirm from './SignupConfirm'
 
 interface IProtectedRouteProps {
   component:
@@ -54,10 +55,10 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
   }
 
   public componentDidMount() {
-    AuthProxy.checkAuthState()
+    AuthProxy.checkAuthState(this.changeComponentTo, this.setAuth)
       .then(data =>
         this.setState({
-          isAuthenticated: data.isAuthenticated
+          isAuthenticated: data.data ? true : false
         })
       )
       .catch(() =>
@@ -87,6 +88,8 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
         )
       case 'signUp':
         return <Signup changeComponentTo={this.changeComponentTo} />
+      case 'confirmSignUp':
+        return <SignupConfirm changeComponentTo={this.changeComponentTo} />
       default:
         return null
     }

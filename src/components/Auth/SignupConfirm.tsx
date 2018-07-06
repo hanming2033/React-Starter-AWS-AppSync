@@ -27,7 +27,7 @@ const schemaConfirm = yup.object().shape({
 const FormConfirm = (formikProps: FormikProps<IAuthFormValues>) => (
   <>
     <Form>
-      <Field name="email" placeholder="Email" disabled />
+      <Field name="email" placeholder="Email" />
       {formikProps.touched.email && formikProps.errors.email}
       <br />
       <Field name="authCode" placeholder="Auth Code" />
@@ -75,7 +75,7 @@ class SignupConfirm extends React.Component<ISignupConfirmProps, ISignupConfirmS
               <Formik
                 initialValues={{
                   authCode: '',
-                  email
+                  email: email || ''
                 }}
                 validationSchema={schemaConfirm}
                 onSubmit={(values, formikBag) => this.confirm(values, formikBag)}

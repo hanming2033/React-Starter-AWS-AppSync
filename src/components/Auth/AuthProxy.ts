@@ -2,7 +2,6 @@ import { Auth, JS } from 'aws-amplify'
 import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
 
 interface IAuthResult {
-  isAuthenticated: boolean
   userVerified?: boolean
   data?: ICognitoUser & any
   error?: any
@@ -29,80 +28,84 @@ export const AuthProxy = {
     try {
       const data = await Auth.signUp(userProperties)
       console.log('Proxy signUp Success : ', data)
-      return { isAuthenticated: false, data }
+      return { data }
     } catch (error) {
       console.log('Proxy signUp Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   },
   confirmSignUp: async (email: string, authCode: string) => {
     try {
       const data = await Auth.confirmSignUp(email, authCode)
       console.log('Proxy confirmSignup Success : ', data)
-      return { isAuthenticated: false, data }
+      return { data }
     } catch (error) {
       console.log('Proxy confirmSignup Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   },
   signIn: async (username: string, password: string): Promise<IAuthResult> => {
     try {
       const data = await Auth.signIn(username, password)
       console.log('Proxy signIn Success : ', data)
-      return { isAuthenticated: true, data }
+      return { data }
     } catch (error) {
       console.log('Proxy signIn Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   },
   signOut: async (): Promise<IAuthResult> => {
     try {
       Auth.signOut()
       console.log('Proxy SignOut Success : ')
-      return { isAuthenticated: false }
+      return {}
     } catch (error) {
       console.log('Proxy SignOut Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   },
-  checkAuthState: async (): Promise<IAuthResult> => {
+  checkAuthState: async (changeComponentTo: TChangeComponent, setAuth: TSetAuth): Promise<IAuthResult> => {
     try {
+      // get current user
+      const user = await Auth.currentAuthenticatedUser()
+      // check if current user is a verified user
+      verifyUser(user, changeComponentTo, setAuth)
+      // check current session
       const data = await Auth.currentSession()
-      console.log('Proxy checkAuthState Success : ', data)
-      return { isAuthenticated: true, data }
+      console.log('Proxy checkAuthState Success ', user, data)
+      return { data }
     } catch (error) {
       console.log('Proxy checkAuthState Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   },
   requestForgotPasswordCode: async (email: string): Promise<IAuthResult> => {
     try {
       const data = await Auth.forgotPassword(email)
       console.log('Proxy requestForgotPW Success : ', data)
-      return { isAuthenticated: false, data }
-      // this.setState({ delivery: data.CodeDeliveryDetails })
+      return { data }
     } catch (error) {
       console.log('Proxy requestForgotPW Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   },
   resetPassword: async (email: string, authCode: string, password: string): Promise<IAuthResult> => {
     try {
       await Auth.forgotPasswordSubmit(email, authCode, password)
-      return { isAuthenticated: false, data: { passwordChanged: true } }
+      return { data: { passwordChanged: true } }
     } catch (error) {
       console.log('Proxy resetPassword Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   },
   setNewPassword: async (user: any, password: string, requiredAttributes: any): Promise<IAuthResult> => {
     try {
       const data = await Auth.completeNewPassword(user, password, requiredAttributes)
       console.log('Proxy setNewPassword Success : ', data)
-      return { isAuthenticated: false, data }
+      return { data }
     } catch (error) {
       console.log('Proxy setNewPassword Fail : ', error)
-      return { isAuthenticated: false, error }
+      return { error }
     }
   }
 }
