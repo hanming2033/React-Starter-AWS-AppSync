@@ -42,13 +42,16 @@ const appSyncLink = createAppSyncLink({
     // congnito user group allows users to be grouped
     jwtToken: async () => (await Auth.currentSession()).getAccessToken().getJwtToken()
   },
-  // disable offline mode
-  disableOffline: true
+  complexObjectsCredentials: ''
+
+  // TODO: investigate this
+  // disableOffline: true
 })
 
 const link = ApolloLink.from([stateLink, appSyncLink])
 
-const client = new AWSAppSyncClient({}, { link })
+// TODO: investigate this
+const client = new AWSAppSyncClient({} as any, { link } as any)
 
 ReactDOM.render(
   <ApolloProvider client={client}>

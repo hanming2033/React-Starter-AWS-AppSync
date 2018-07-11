@@ -5,8 +5,7 @@
   "dependencies": {
     "apollo-link-state": "^0.4.1",
     "aws-amplify": "^0.4.4",
-    "aws-amplify-react": "^0.1.50",
-    "aws-appsync": "^1.0.23",
+    "aws-appsync": "^1.1.4",
     "aws-appsync-react": "^1.0.14",
     "formik": "^0.11.11",
     "graphql-tag": "^2.9.2",
