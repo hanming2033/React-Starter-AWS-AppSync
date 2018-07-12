@@ -6,7 +6,7 @@ class Protected extends React.Component<RouteComponentProps<{}>> {
   public render() {
     return (
       <>
-        <h3>private</h3>
+        <h3>Private</h3>
         <p>
           Welcome! <button onClick={() => AuthProxy.signOut().then(() => this.props.history.replace('/'))}>Sign Out</button>{' '}
         </p>
@@ -16,14 +16,3 @@ class Protected extends React.Component<RouteComponentProps<{}>> {
 }
 
 export default Protected
-
-// const AuthButton = withRouter(
-//   ({ history }) =>
-//     true ? (
-//       <p>
-//         Welcome! <button onClick={() => AuthProxy.signOut().then(() => history.replace('/'))}>Sign Out</button>{' '}
-//       </p>
-//     ) : (
-//       <p>You are not logged in</p>
-//     )
-// )

@@ -94,6 +94,7 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
+          if (qryRes.loading) return <h1>loading...</h1>
           if (qryRes.error) return <h1>Error!!</h1>
           if (!qryRes.data || !qryRes.data.forms) return null
 

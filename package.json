@@ -24,6 +24,8 @@
     "gentypes": "node src/scripts/buildSchema.js && apollo-codegen generate src/**/*.{tsx,ts} --schema schemaDump.json --add-typename --target typescript --output src/data/graphql-types.ts && rm schemaDump.json"
   },
   "devDependencies": {
+    "@types/enzyme": "^3.1.11",
+    "@types/enzyme-adapter-react-16": "^1.0.2",
     "@types/jest": "^23.1.0",
     "@types/node": "^10.3.3",
     "@types/react": "^16.3.18",

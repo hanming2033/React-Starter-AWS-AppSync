@@ -38,7 +38,7 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
   public state = {
     isAuthenticated: false,
     authData: null,
-    componentToShow: 'signIn' as validComponents
+    componentToShow: 'signUp' as validComponents
   }
 
   public setAuth: TSetAuth = isAuthenticated => {
@@ -94,7 +94,7 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
   }
 
   public render() {
-    const { component: Component, location, ...rest } = this.props
+    const { component: Component, ...rest } = this.props
     return (
       <Route
         {...rest}

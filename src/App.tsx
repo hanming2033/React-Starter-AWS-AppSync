@@ -6,8 +6,8 @@ import { Switch, Route } from 'react-router'
 import { BrowserRouter } from 'react-router-dom'
 import Login from './components/Auth/SignIn'
 import ProtectedRoute from './components/Auth/AuthenticatorRouter'
-import Protected from './components/DummyFiles/PrivateRoute'
-import Public from './components/DummyFiles/PublicRoute'
+import Protected from './components/DummyFiles/Protected'
+import Public from './components/DummyFiles/Public'
 import Signup from './components/Auth/SignUp'
 
 export class App extends React.Component {
