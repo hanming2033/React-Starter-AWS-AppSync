@@ -51,7 +51,8 @@ const appSyncLink = createAppSyncLink({
 const link = ApolloLink.from([stateLink, appSyncLink])
 
 // TODO: investigate this
-const client = new AWSAppSyncClient({} as any, { link } as any)
+// export client to write queries without being in a component
+export const client = new AWSAppSyncClient({} as any, { link } as any)
 
 ReactDOM.render(
   <ApolloProvider client={client}>
