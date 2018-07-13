@@ -2,6 +2,10 @@
 //  This file was automatically generated and should not be edited.
 
 export interface GetLocalStatesQuery {
+  auth:  {
+    __typename: "auth",
+    isAuthenticated: boolean,
+  } | null,
   forms:  {
     __typename: "forms",
     input_Email: string,

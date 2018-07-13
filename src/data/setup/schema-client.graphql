@@ -5,6 +5,7 @@
 type Query {
   forms: forms
   nav: nav
+  auth: auth
 }
 
 type forms {
@@ -13,4 +14,8 @@ type forms {
 
 type nav {
   nextPath: String!
+}
+
+type auth {
+  isAuthenticated: Boolean!
 }

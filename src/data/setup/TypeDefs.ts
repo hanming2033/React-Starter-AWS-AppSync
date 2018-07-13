@@ -5,6 +5,7 @@ const typeDefs = `
   type Query {
     forms: forms
     nav: nav
+    auth: auth
   }
 
   type forms {
@@ -13,6 +14,10 @@ const typeDefs = `
 
   type nav {
     nextPath: String!
+  }
+
+  type auth {
+    isAuthenticated: Boolean!
   }
 `
 export default typeDefs

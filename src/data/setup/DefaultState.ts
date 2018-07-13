@@ -8,6 +8,10 @@ export const types = {
 }
 
 interface IState {
+  auth: {
+    __typename: string
+    isAuthenticated: boolean
+  }
   forms: {
     __typename: string
     input_Email: string
@@ -20,6 +24,10 @@ interface IState {
 }
 
 const defaultState: IState = {
+  auth: {
+    __typename: types.AUTH,
+    isAuthenticated: false
+  },
   forms: {
     __typename: types.FORMS,
     input_Email: ''
