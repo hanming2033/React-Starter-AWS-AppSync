@@ -19,7 +19,7 @@ interface IResetFormValues {
 }
 
 export interface IForgotPasswordProps {
-  changeComponentTo: TChangeComponent
+  toComp: TChangeComponent
 }
 
 export interface IForgotPasswordState {}
@@ -104,7 +104,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
       formikBag.setFieldValue('password', '', false)
       formikBag.setSubmitting(false)
       if (res.error && (res.error.message as string).includes('no registered/verified')) {
-        this.props.changeComponentTo('confirmSignUp') // *good
+        this.props.toComp('confirmSignUp') // *good
       }
     }
   }
@@ -117,7 +117,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
       formikBag.resetForm()
       formikBag.setSubmitting(false)
       this.setState({ delivery: null })
-      this.props.changeComponentTo('signIn') // *good
+      this.props.toComp('signIn') // *good
     } else if (res.error) {
       formikBag.setErrors({
         code: res.error.code ? res.error.message : '',
@@ -156,7 +156,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
                 }
                 component={this.state.delivery ? formReset : formRequest}
               />
-              <button onClick={() => this.props.changeComponentTo('signIn')}>Back to Sign In</button>
+              <button onClick={() => this.props.toComp('signIn')}>Back to Sign In</button>
             </>
           )
         }}
