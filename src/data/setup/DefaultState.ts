@@ -11,6 +11,7 @@ interface IState {
   auth: {
     __typename: string
     isAuthenticated: boolean
+    authData: string
   }
   forms: {
     __typename: string
@@ -26,7 +27,8 @@ interface IState {
 const defaultState: IState = {
   auth: {
     __typename: types.AUTH,
-    isAuthenticated: false
+    isAuthenticated: false,
+    authData: ''
   },
   forms: {
     __typename: types.FORMS,

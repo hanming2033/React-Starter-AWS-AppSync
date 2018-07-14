@@ -1,5 +1,7 @@
 import { Auth, JS } from 'aws-amplify'
-import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
+import { GetLocalStatesQuery } from '../../data/graphql-types'
+import { GET_LOCAL_STATES } from '../../data/actions/Queries'
+import { client } from '../../index'
 
 interface IAuthResult {
   userVerified?: boolean
@@ -64,12 +66,13 @@ export const AuthProxy = {
       return { error }
     }
   },
-  checkAuthState: async (changeComponentTo: TChangeComponent, setAuth: TSetAuth): Promise<IAuthResult> => {
+  checkAuthState: async (): Promise<IAuthResult> => {
     try {
       // get current user
       const user = await Auth.currentAuthenticatedUser()
       // check if current user is a verified user
-      verifyUser(user, changeComponentTo, setAuth)
+      const verificationDetail = await verifyUser(user)
+      if (!isObjEmpty(verificationDetail.unverified)) return { error: { message: 'User not verified' } }
       // check current session
       const data = await Auth.currentSession()
       console.log('Proxy checkAuthState Success ', user, data)
@@ -110,15 +113,32 @@ export const AuthProxy = {
   }
 }
 
-// TODO: set auth here. this shld be the final check
-export const verifyUser = async (user: any, changeComponentTo: TChangeComponent, setAuth: TSetAuth) => {
+export const verifyUser = async (user: any) => {
+  const res: GetLocalStatesQuery | null = client.readQuery({ query: GET_LOCAL_STATES })
+  if (!res || !res.auth) return { verified: {}, unverified: {} }
   const verification = await Auth.verifiedContact(user)
   console.log('VerifyContact Post-Verification Result : ', verification)
-  if (!JS.isEmpty(verification.verified)) {
-    setAuth(true)
-  } else {
-    setAuth(false)
-    user = { ...user, ...verification }
-    changeComponentTo('verifyContact', user)
+  const newData: GetLocalStatesQuery = {
+    ...res,
+    auth: {
+      ...res.auth
+    }
   }
+
+  if (!JS.isEmpty(verification.verified)) {
+    if (newData.auth) {
+      newData.auth.isAuthenticated = true
+    }
+  } else {
+    if (newData.auth) {
+      newData.auth.isAuthenticated = false
+    }
+  }
+  client.writeQuery({
+    query: GET_LOCAL_STATES,
+    data: newData
+  })
+  return verification
 }
+
+export const isObjEmpty = (obj: object) => Object.keys(obj).length === 0 && obj.constructor === Object

@@ -14,7 +14,7 @@ interface ISignupFormValues {
 }
 
 export interface ISignupProps {
-  changeComponentTo: TChangeComponent
+  toComp: TChangeComponent
 }
 
 export interface ISignupState {}
@@ -83,7 +83,7 @@ class Signup extends React.Component<ISignupProps, ISignupState> {
     if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      this.props.changeComponentTo('confirmSignUp')
+      this.props.toComp('confirmSignUp')
     } else if (res.error) {
       formikBag.setErrors({
         email: (res.error.message as string).includes('email') ? res.error.message : '',
@@ -96,7 +96,6 @@ class Signup extends React.Component<ISignupProps, ISignupState> {
   }
 
   public render() {
-    console.log('signup')
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES}>
         {qryRes => {
@@ -114,8 +113,8 @@ class Signup extends React.Component<ISignupProps, ISignupState> {
                 onSubmit={(values, formikBag) => this.signupSubmit(values, formikBag, qryRes)}
                 component={FormSignup}
               />
-              <button onClick={() => this.props.changeComponentTo('confirmSignUp')}>Confirm a Code</button>
-              <button onClick={() => this.props.changeComponentTo('signIn')}>Go to SignIn</button>
+              <button onClick={() => this.props.toComp('confirmSignUp')}>Confirm a Code</button>
+              <button onClick={() => this.props.toComp('signIn')}>Go to SignIn</button>
             </>
           )
         }}

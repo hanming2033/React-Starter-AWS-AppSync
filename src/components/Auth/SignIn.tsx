@@ -5,8 +5,8 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { RouteComponentProps } from 'react-router'
-import { AuthProxy, verifyUser } from './AuthProxy'
-import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
+import { AuthProxy, verifyUser, isObjEmpty } from './AuthProxy'
+import { TChangeComponent } from './AuthenticatorRouter'
 
 // *1 define the form values interface
 interface ISigninFormValues {
@@ -15,9 +15,7 @@ interface ISigninFormValues {
 }
 
 export interface ISignInProps {
-  referrer: string
-  setAuth: TSetAuth
-  changeComponentTo: TChangeComponent
+  toComp: TChangeComponent
 }
 
 export interface ISignInState {}
@@ -70,11 +68,14 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
     const res = await AuthProxy.signIn(values.email, values.password)
     if (res.data) {
       if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
-        this.props.changeComponentTo('confirmSignIn') // TODO: check if mfa works
+        this.props.toComp('confirmSignIn') // TODO: check if mfa works
       } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
-        this.props.changeComponentTo('requireNewPassword', res.data) // *good
+        this.props.toComp('requireNewPassword', res.data)
       } else {
-        verifyUser(res.data, this.props.changeComponentTo, this.props.setAuth) // *good
+        const verificationDetail = await verifyUser(res.data)
+        if (verificationDetail.verified === {}) this.props.toComp('verifyContact')
+        if (isObjEmpty(verificationDetail.verified) && this.props.history.location.pathname === '/authenticate')
+          this.props.history.replace('/')
       }
     } else if (res.error) {
       formikBag.setSubmitting(false)
@@ -85,7 +86,7 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
       })
 
       if (res.error.code === 'UserNotConfirmedException') {
-        this.props.changeComponentTo('confirmSignUp')
+        this.props.toComp('confirmSignUp')
       }
     }
   }
@@ -112,8 +113,8 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
                 onSubmit={(values, formikBag) => this.login(values, formikBag, qryRes)}
                 component={formSignin}
               />
-              <button onClick={() => this.props.changeComponentTo('forgotPassword')}>Forgot Password</button>
-              <button onClick={() => this.props.changeComponentTo('signUp')}>Go to SignUp</button>
+              <button onClick={() => this.props.toComp('forgotPassword')}>Forgot Password</button>
+              <button onClick={() => this.props.toComp('signUp')}>Go to SignUp</button>
             </>
           )
         }}

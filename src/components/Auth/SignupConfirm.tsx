@@ -16,7 +16,7 @@ interface IAuthFormValues {
 export interface ISignupConfirmState {}
 
 export interface ISignupConfirmProps {
-  changeComponentTo: TChangeComponent
+  toComp: TChangeComponent
 }
 
 // yup schema for signup form validation
@@ -48,7 +48,7 @@ class SignupConfirm extends React.Component<ISignupConfirmProps, ISignupConfirmS
     if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      this.props.changeComponentTo('signIn')
+      this.props.toComp('signIn')
     } else if (res.error) {
       formikBag.setErrors({
         authCode: res.error.message
@@ -82,7 +82,7 @@ class SignupConfirm extends React.Component<ISignupConfirmProps, ISignupConfirmS
                 component={FormConfirm}
               />
               <button onClick={() => this.resend(email)}>Resend Code</button>
-              <button onClick={() => this.props.changeComponentTo('signIn')}>Go to SignIn</button>
+              <button onClick={() => this.props.toComp('signIn')}>Go to SignIn</button>
             </>
           )
         }}

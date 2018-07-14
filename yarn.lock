@@ -543,33 +543,16 @@ aws-amplify@^0.4.4:
     uuid "^3.2.1"
     zen-observable "^0.8.6"
 
-aws-appsync-react@^1.0.14:
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/aws-appsync-react/-/aws-appsync-react-1.0.14.tgz#6c81c1c92057dbde4917dff6b898231989338727"
+aws-appsync-react@^1.0.21:
+  version "1.0.21"
+  resolved "https://registry.yarnpkg.com/aws-appsync-react/-/aws-appsync-react-1.0.21.tgz#d3bcd3e17d41caf112d61beabdfac0fc00aca96c"
   dependencies:
-    aws-appsync "^1.0.23"
+    aws-appsync "^1.2.1"
     prop-types "^15.6.0"
 
-aws-appsync@^1.0.23:
-  version "1.0.23"
-  resolved "https://registry.yarnpkg.com/aws-appsync/-/aws-appsync-1.0.23.tgz#ff663e72159e68d5fb82a521f26222b6d3732107"
-  dependencies:
-    "@redux-offline/redux-offline" "^2.2.1"
-    apollo-cache-inmemory "^1.0.0"
-    apollo-client "2.2.6"
-    apollo-link "^1.0.0"
-    apollo-link-context "^1.0.0"
-    apollo-link-http "^1.0.0"
-    aws-sdk "^2.139.0"
-    graphql "^0.11.7"
-    redux "^3.7.2"
-    redux-thunk "^2.2.0"
-    setimmediate "^1.0.5"
-    url "^0.11.0"
-
-aws-appsync@^1.1.4:
-  version "1.1.4"
-  resolved "https://registry.yarnpkg.com/aws-appsync/-/aws-appsync-1.1.4.tgz#9e1cd1a16c35e343491b8674a3206adf64a09bd7"
+aws-appsync@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/aws-appsync/-/aws-appsync-1.2.1.tgz#ddcd6e2003dc51ba60670b86c2ab576431dce74f"
   dependencies:
     "@redux-offline/redux-offline" "^2.2.1"
     apollo-cache-inmemory "^1.0.0"
