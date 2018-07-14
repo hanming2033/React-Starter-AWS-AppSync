@@ -4,8 +4,8 @@ import { Query } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
-import { AuthProxy, verifyUser } from './AuthProxy'
+import { TChangeComponent } from './AuthenticatorRouter'
+import { AuthProxy, verifyUser, isObjEmpty } from './AuthProxy'
 
 // *1 define the form values interface
 interface IRequireNewPasswordValues {
@@ -15,8 +15,7 @@ interface IRequireNewPasswordValues {
 }
 
 export interface IRequireNewPasswordProps {
-  changeComponentTo: TChangeComponent
-  setAuth: TSetAuth
+  toComp: TChangeComponent
   authData?: any
 }
 
@@ -56,9 +55,10 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
       formikBag.resetForm()
       formikBag.setSubmitting(false)
       if (res.data.challengeName === 'SMS_MFA') {
-        this.props.changeComponentTo('confirmSignIn')
+        this.props.toComp('confirmSignIn')
       } else {
-        verifyUser(res.data, this.props.changeComponentTo, this.props.setAuth)
+        const verificationDetail = await verifyUser(res.data)
+        if (!isObjEmpty(verificationDetail.verified)) this.props.toComp('verifyContact')
       }
     } else if (res.error) {
       formikBag.setErrors({
