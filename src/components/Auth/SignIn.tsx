@@ -5,8 +5,9 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { RouteComponentProps } from 'react-router'
-import { AuthProxy, verifyUser, isObjEmpty } from './AuthProxy'
+import { AuthProxy, verifyUser } from './AuthProxy'
 import { TChangeComponent } from './AuthenticatorRouter'
+import { JS } from 'aws-amplify'
 
 // *1 define the form values interface
 interface ISigninFormValues {
@@ -67,15 +68,13 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
     }
     const res = await AuthProxy.signIn(values.email, values.password)
     if (res.data) {
-      if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
+      if (res.data.user.challengeName === 'SMS_MFA' || res.data.user.challengeName === 'SOFTWARE_TOKEN_MFA') {
         this.props.toComp('confirmSignIn') // TODO: check if mfa works
-      } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
+      } else if (res.data.user.challengeName === 'NEW_PASSWORD_REQUIRED') {
         this.props.toComp('requireNewPassword', res.data)
       } else {
         const verificationDetail = await verifyUser(res.data)
-        if (verificationDetail.verified === {}) this.props.toComp('verifyContact')
-        if (isObjEmpty(verificationDetail.verified) && this.props.history.location.pathname === '/authenticate')
-          this.props.history.replace('/')
+        if (JS.isEmpty(verificationDetail.verified)) this.props.toComp('verifyContact')
       }
     } else if (res.error) {
       formikBag.setSubmitting(false)

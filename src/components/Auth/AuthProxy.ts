@@ -3,13 +3,50 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { client } from '../../index'
 
+export type TChanllenges = 'SMS_MFA' | 'MFA_SETUP' | 'SOFTWARE_TOKEN_MFA' | 'NEW_PASSWORD_REQUIRED' | 'TOTP' | 'SMS'
+
 interface IAuthResult {
   userVerified?: boolean
-  data?: ICognitoUser & any
-  error?: any
+  data?: {
+    user: ICognitoUser // signup
+    userConfirmed: false // signup
+    userSub: string // signup
+    CodeDeliveryDetails?: any // forget
+  }
+  error?: ICognitoError
   passwordChanged?: boolean
 }
-export type TChanllenges = 'SMS_MFA' | 'MFA_SETUP' | 'SOFTWARE_TOKEN_MFA' | 'NEW_PASSWORD_REQUIRED' | 'TOTP' | 'SMS'
+
+export interface ICognitoError {
+  code: string
+  name: string
+  message: string
+}
+
+export interface ICognitoUser {
+  challengeName?: TChanllenges
+  Session: string | null
+  authenticationFlowType: string
+  client: {
+    endpoint: string
+    userAgent: string
+  }
+  pool: {
+    advancedSecurityDataCollectionFlag: boolean
+    client: {
+      endpoint: string
+      userAgent: string
+    }
+    clientId: string
+    storage: { [key: string]: string }
+    userPoolId: string
+  }
+  signInUserSession: string | null
+  storage: { [key: string]: string }
+  username: string
+  userConfirmed: boolean
+  userSub: string
+}
 
 interface IUserProps {
   username: string
@@ -19,10 +56,6 @@ interface IUserProps {
     phone_number: string
     email: string
   }
-}
-
-export interface ICognitoUser {
-  challengeName: TChanllenges
 }
 
 export const AuthProxy = {
@@ -72,7 +105,7 @@ export const AuthProxy = {
       const user = await Auth.currentAuthenticatedUser()
       // check if current user is a verified user
       const verificationDetail = await verifyUser(user)
-      if (!isObjEmpty(verificationDetail.unverified)) return { error: { message: 'User not verified' } }
+      if (JS.isEmpty(verificationDetail.unverified)) return { userVerified: false }
       // check current session
       const data = await Auth.currentSession()
       console.log('Proxy checkAuthState Success ', user, data)
@@ -95,7 +128,7 @@ export const AuthProxy = {
   resetPassword: async (email: string, authCode: string, password: string): Promise<IAuthResult> => {
     try {
       await Auth.forgotPasswordSubmit(email, authCode, password)
-      return { data: { passwordChanged: true } }
+      return { passwordChanged: true }
     } catch (error) {
       console.log('Proxy resetPassword Fail : ', error)
       return { error }
@@ -140,5 +173,3 @@ export const verifyUser = async (user: any) => {
   })
   return verification
 }
-
-export const isObjEmpty = (obj: object) => Object.keys(obj).length === 0 && obj.constructor === Object

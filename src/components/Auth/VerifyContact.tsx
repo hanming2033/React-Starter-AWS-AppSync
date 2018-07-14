@@ -135,3 +135,17 @@
 // }
 
 // export default ForgotPassword
+
+import * as React from 'react'
+
+interface IappProps {}
+
+const app: React.SFC<IappProps> = props => {
+  return (
+    <>
+      <p>Verify Contact</p>
+    </>
+  )
+}
+
+export default app

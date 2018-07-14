@@ -65,7 +65,7 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
           const { componentToShow } = this.state
 
           const authenticated = qryRes.data && qryRes.data.auth && qryRes.data.auth.isAuthenticated
-          console.log('AuthenticatorRouter Switching routes... ', componentToShow)
+          // console.log('AuthenticatorRouter Switching routes... ', componentToShow)
 
           if (authenticated && this.props.path === '/authenticate') return <Redirect to="/" />
           if (authenticated) return <Route {...rest} render={props => <Component {...props} />} />

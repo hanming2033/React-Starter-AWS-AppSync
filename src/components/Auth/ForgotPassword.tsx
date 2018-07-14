@@ -94,7 +94,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
 
     const res = await AuthProxy.requestForgotPasswordCode(values.email)
     if (res.data) {
-      this.setState({ delivery: res.data.CodeDeliveryDetails }) // *good
+      this.setState({ delivery: res.data.CodeDeliveryDetails })
       formikBag.resetForm()
       formikBag.setSubmitting(false)
     } else if (res.error) {
