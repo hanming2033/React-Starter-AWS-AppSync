@@ -1,11 +1,14 @@
-import { Route, RouteProps, RouteComponentProps, StaticContext } from 'react-router'
+import { Route, RouteProps, RouteComponentProps, StaticContext, Redirect } from 'react-router'
 import React from 'react'
 import { AuthProxy } from './AuthProxy'
 import Signin from './SignIn'
-import ForgotPassword from './ForgotPassword'
+import Forgot from './ForgotPassword'
 import RequireNewPassword from './RequireNewPassword'
 import Signup from './SignUp'
 import SignupConfirm from './SignupConfirm'
+import { GET_LOCAL_STATES } from '../../data/actions/Queries'
+import { GetLocalStatesQuery } from '../../data/graphql-types'
+import { Query } from 'react-apollo'
 
 interface IProtectedRouteProps {
   component:
@@ -29,23 +32,17 @@ export type TChangeComponent = (newComponent: validComponents, userData?: any) =
 export type TSetAuth = (isAuthenticated: boolean) => void
 
 interface IProtectedRouteState {
-  isAuthenticated: boolean
   authData: any
   componentToShow: validComponents
 }
 
 class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, IProtectedRouteState> {
   public state = {
-    isAuthenticated: false,
     authData: null,
     componentToShow: 'signUp' as validComponents
   }
 
-  public setAuth: TSetAuth = isAuthenticated => {
-    this.setState({ isAuthenticated })
-  }
-
-  public changeComponentTo: TChangeComponent = (component, userData) => {
+  public toComp: TChangeComponent = (component, userData) => {
     this.setState({
       componentToShow: component,
       authData: userData ? userData : this.state.authData
@@ -53,53 +50,38 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
   }
 
   public componentDidMount() {
-    AuthProxy.checkAuthState(this.changeComponentTo, this.setAuth)
-      .then(data =>
-        this.setState({
-          isAuthenticated: data.data ? true : false
-        })
-      )
-      .catch(() =>
-        this.setState({
-          isAuthenticated: false
-        })
-      )
-  }
-
-  public genAuthComp = (componentToShow: validComponents, props: any) => {
-    console.log('AuthenticatorRouter Switching routes... ', componentToShow)
-    switch (componentToShow) {
-      case 'signIn':
-        return (
-          <Signin
-            {...props}
-            changeComponentTo={this.changeComponentTo}
-            setAuth={this.setAuth}
-            referrer={location ? location.pathname : '/'}
-          />
-        )
-      case 'forgotPassword':
-        return <ForgotPassword {...props} changeComponentTo={this.changeComponentTo} />
-      case 'requireNewPassword':
-        return (
-          <RequireNewPassword {...props} setAuth={this.setAuth} authData={this.state.authData} changeComponentTo={this.changeComponentTo} />
-        )
-      case 'signUp':
-        return <Signup changeComponentTo={this.changeComponentTo} />
-      case 'confirmSignUp':
-        return <SignupConfirm changeComponentTo={this.changeComponentTo} />
-      default:
-        return null
-    }
+    AuthProxy.checkAuthState().then(res => {
+      console.log('Authenticator Router On Mount: ', res)
+    })
   }
 
   public render() {
     const { component: Component, ...rest } = this.props
     return (
-      <Route
-        {...rest}
-        render={props => (this.state.isAuthenticated ? <Component {...props} /> : this.genAuthComp(this.state.componentToShow, props))}
-      />
+      <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="network-only">
+        {qryRes => {
+          if (qryRes.loading) return 'loading...'
+          if (!qryRes || qryRes.error) return 'Error...'
+          const { componentToShow } = this.state
+
+          const authenticated = qryRes.data && qryRes.data.auth && qryRes.data.auth.isAuthenticated
+          console.log('AuthenticatorRouter Switching routes... ', componentToShow)
+
+          if (authenticated && this.props.path === '/authenticate') return <Redirect to="/" />
+          if (authenticated) return <Route {...rest} render={props => <Component {...props} />} />
+          if (componentToShow === 'signIn') return <Route {...rest} render={props => <Signin {...props} toComp={this.toComp} />} />
+          if (componentToShow === 'signUp') return <Route {...rest} render={props => <Signup {...props} toComp={this.toComp} />} />
+          if (componentToShow === 'forgotPassword') return <Route {...rest} render={props => <Forgot {...props} toComp={this.toComp} />} />
+          if (componentToShow === 'confirmSignUp')
+            return <Route {...rest} render={props => <SignupConfirm {...props} toComp={this.toComp} />} />
+          if (componentToShow === 'requireNewPassword')
+            return (
+              <Route {...rest} render={props => <RequireNewPassword {...props} authData={this.state.authData} toComp={this.toComp} />} />
+            )
+
+          return 'Not Authenticated!' // dummy output
+        }}
+      </Query>
     )
   }
 }
