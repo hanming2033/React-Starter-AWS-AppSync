@@ -1,6 +1,6 @@
 import { Route, RouteProps, RouteComponentProps, StaticContext, Redirect } from 'react-router'
 import React from 'react'
-import { AuthProxy } from './AuthProxy'
+import { AuthProxy } from './AuthProxies/AuthProxy'
 import Signin from './SignIn'
 import Forgot from './ForgotPassword'
 import RequireNewPassword from './RequireNewPassword'
@@ -9,6 +9,7 @@ import SignupConfirm from './SignupConfirm'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { Query } from 'react-apollo'
+import VerifyContact from './VerifyContact'
 
 interface IProtectedRouteProps {
   component:
@@ -78,7 +79,7 @@ class ProtectedRoute extends React.Component<IProtectedRouteProps & RouteProps, 
             return (
               <Route {...rest} render={props => <RequireNewPassword {...props} authData={this.state.authData} toComp={this.toComp} />} />
             )
-
+          if (componentToShow === 'verifyContact') return <Route {...rest} render={props => <VerifyContact {...props} />} />
           return 'Not Authenticated!' // dummy output
         }}
       </Query>

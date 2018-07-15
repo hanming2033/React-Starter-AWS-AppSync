@@ -5,7 +5,7 @@ import { Query, QueryResult } from 'react-apollo'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { TChangeComponent } from './AuthenticatorRouter'
-import { AuthProxy } from './AuthProxy'
+import { AuthProxy } from './AuthProxies/AuthProxy'
 
 interface ISignupFormValues {
   email: string

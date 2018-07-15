@@ -5,7 +5,7 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { TChangeComponent } from './AuthenticatorRouter'
-import { AuthProxy } from './AuthProxy'
+import { AuthProxy } from './AuthProxies/AuthProxy'
 
 // *1 define the form values interface
 interface IRequestFormValues {
@@ -112,7 +112,6 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
   public resetPassword = async (values: IResetFormValues, formikBag: FormikActions<IResetFormValues>) => {
     formikBag.setSubmitting(true)
     const res = await AuthProxy.resetPassword(values.email, values.code, values.password)
-
     if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)

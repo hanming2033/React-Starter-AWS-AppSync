@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { AuthProxy } from '../Auth/AuthProxy'
+import { AuthProxy } from '../Auth/AuthProxies/AuthProxy'
 import { RouteComponentProps } from 'react-router'
 
 class Protected extends React.Component<RouteComponentProps<{}>> {

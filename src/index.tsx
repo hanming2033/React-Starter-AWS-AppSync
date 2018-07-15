@@ -10,9 +10,9 @@ import Amplify, { Auth } from 'aws-amplify'
 import awsconfig from './aws-exports'
 // *aws appsync imports - download from AppSync
 import { Rehydrated } from 'aws-appsync-react'
-import AWSAppSyncClient, { createAppSyncLink, createLinkWithCache } from 'aws-appsync'
+import AWSAppSyncClient, { createAppSyncLink, createLinkWithCache } from 'aws-appsync/lib'
 import { withClientState } from 'apollo-link-state'
-import appSyncConfig from './AppSync.js'
+import appSyncConfig from './AppSync'
 
 // *configure using mobilehub export
 Amplify.configure(awsconfig)

@@ -5,8 +5,9 @@ import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { TChangeComponent } from './AuthenticatorRouter'
-import { AuthProxy, verifyUser } from './AuthProxy'
+import { AuthProxy } from './AuthProxies/AuthProxy'
 import { JS } from 'aws-amplify'
+import { verifyUser } from './AuthProxies/verifyUser'
 
 // *1 define the form values interface
 interface IRequireNewPasswordValues {
@@ -55,7 +56,7 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
     if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      if (res.data.user.challengeName === 'SMS_MFA') {
+      if (res.data.challengeName === 'SMS_MFA') {
         this.props.toComp('confirmSignIn')
       } else {
         const verificationDetail = await verifyUser(res.data)
