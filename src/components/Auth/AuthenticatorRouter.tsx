@@ -33,7 +33,7 @@ export type validComponents =
   | 'TOTPSetup'
 
 export type TChangeComponent = (newComponent: validComponents, userData?: any) => void
-export type TSetAuth = (isAuthenticated: boolean) => void
+export type TSetAuth = (verification: IVerification) => void
 
 interface IProtectedRouteState {
   authData: any
@@ -61,9 +61,9 @@ class Authenticator extends React.Component<
   }
 
   public setAuth = (verification: IVerification) => {
-    // todo:set auth based on verify user only and give this method to other components
     const isAuthenticated = !JS.isEmpty(verification.verified)
     console.log(isAuthenticated)
+    this.toComp('verifyContact')
     if (!this.props.mutate) return
     this.props.mutate({ variables: { status: isAuthenticated } })
   }
@@ -93,12 +93,18 @@ class Authenticator extends React.Component<
     console.log(data.auth.isAuthenticated)
     if (data.auth.isAuthenticated && this.props.path === '/authenticate') return <Redirect to="/" />
     if (data.auth.isAuthenticated) return <Route {...rest} render={props => <Component {...props} />} />
-    if (componentToShow === 'signIn') return <Route {...rest} render={props => <Signin {...props} toComp={this.toComp} />} />
+    if (componentToShow === 'signIn')
+      return <Route {...rest} render={props => <Signin setAuth={this.setAuth} {...props} toComp={this.toComp} />} />
     if (componentToShow === 'signUp') return <Route {...rest} render={props => <Signup {...props} toComp={this.toComp} />} />
     if (componentToShow === 'forgotPassword') return <Route {...rest} render={props => <Forgot {...props} toComp={this.toComp} />} />
     if (componentToShow === 'confirmSignUp') return <Route {...rest} render={props => <SignupConfirm {...props} toComp={this.toComp} />} />
     if (componentToShow === 'requireNewPassword')
-      return <Route {...rest} render={props => <RequireNewPassword {...props} authData={this.state.authData} toComp={this.toComp} />} />
+      return (
+        <Route
+          {...rest}
+          render={props => <RequireNewPassword setAuth={this.setAuth} {...props} authData={this.state.authData} toComp={this.toComp} />}
+        />
+      )
     if (componentToShow === 'verifyContact') return <Route {...rest} render={props => <VerifyContact {...props} />} />
     return 'Not Authenticated!' // dummy output
   }

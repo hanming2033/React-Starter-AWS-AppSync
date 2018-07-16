@@ -4,9 +4,8 @@ import { Query } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { TChangeComponent } from './AuthenticatorRouter'
+import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
-import { JS } from 'aws-amplify'
 import { verifyUser } from './AuthProxies/verifyUser'
 
 // *1 define the form values interface
@@ -19,6 +18,7 @@ interface IRequireNewPasswordValues {
 export interface IRequireNewPasswordProps {
   toComp: TChangeComponent
   authData?: any
+  setAuth: TSetAuth
 }
 
 export interface IRequireNewPasswordState {}
@@ -60,7 +60,7 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
         this.props.toComp('confirmSignIn')
       } else {
         const verificationDetail = await verifyUser(res.data)
-        if (JS.isEmpty(verificationDetail.verified)) this.props.toComp('verifyContact')
+        this.props.setAuth(verificationDetail)
       }
     } else if (res.error) {
       formikBag.setErrors({

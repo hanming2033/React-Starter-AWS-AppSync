@@ -6,8 +6,7 @@ import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { RouteComponentProps } from 'react-router'
 import { AuthProxy } from './AuthProxies/AuthProxy'
-import { TChangeComponent } from './AuthenticatorRouter'
-import { JS } from 'aws-amplify'
+import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
 
 // *1 define the form values interface
@@ -18,6 +17,7 @@ interface ISigninFormValues {
 
 export interface ISignInProps {
   toComp: TChangeComponent
+  setAuth: TSetAuth
 }
 
 export interface ISignInState {}
@@ -75,7 +75,7 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
         this.props.toComp('requireNewPassword', res.data)
       } else {
         const verificationDetail = await verifyUser(res.data)
-        if (JS.isEmpty(verificationDetail.verified)) this.props.toComp('verifyContact')
+        this.props.setAuth(verificationDetail)
       }
     } else if (res.error) {
       formikBag.setSubmitting(false)
