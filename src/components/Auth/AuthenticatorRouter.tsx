@@ -60,28 +60,30 @@ class Authenticator extends React.Component<
     })
   }
 
-  public setAuth = (verification: IVerification, currentSession: ICognitoUserSession | null | undefined) => {
+  public setAuth = (verification: IVerification) => {
     // todo:set auth based on verify user only and give this method to other components
-    const isAuthenticated = currentSession !== null && currentSession !== undefined && !JS.isEmpty(verification.verified)
+    const isAuthenticated = !JS.isEmpty(verification.verified)
     console.log(isAuthenticated)
     if (!this.props.mutate) return
     this.props.mutate({ variables: { status: isAuthenticated } })
   }
 
   public componentDidMount() {
-    AuthProxy.checkAuthState().then(res => {
-      console.log('Authenticator Router On Mount: ', res)
-      if (!res.data) return
-      AuthProxy.verifyUser(res.data.user).then(verification => {
-        if (res.data) {
-          this.setAuth(verification, res.data.session)
-        }
-        this.setState({
-          currentSession: res.data && res.data.session ? res.data.session : null,
-          verification
+    AuthProxy.checkAuthState()
+      .then(res => {
+        console.log('Authenticator Router On Mount: ', res)
+        return res
+      })
+      .then(res => {
+        if (!res.data) return
+        AuthProxy.verifyUser(res.data.user).then(verification => {
+          if (res.data) {
+            this.setAuth(verification)
+          } else {
+            this.setAuth({ verified: {}, unverified: {} })
+          }
         })
       })
-    })
   }
 
   public render() {
