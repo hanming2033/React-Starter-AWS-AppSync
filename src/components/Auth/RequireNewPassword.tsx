@@ -4,21 +4,20 @@ import { Query } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
+import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 import { verifyUser } from './AuthProxies/verifyUser'
 
 // *1 define the form values interface
 interface IRequireNewPasswordValues {
-  email: string
   password: string
   confirmPassword: string
 }
 
 export interface IRequireNewPasswordProps {
-  toComp: TChangeComponent
+  toComp: TtoComp
   authData?: any
-  setAuth: TSetAuth
+  setAuth: TsetAuth
 }
 
 export interface IRequireNewPasswordState {}
@@ -79,7 +78,6 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
         {qryRes => {
           if (qryRes.error) return <h1>Error!!</h1>
           if (!qryRes.data || !qryRes.data.forms) return null
-
           return (
             <>
               {/* 5inject Formik component into view */}
@@ -91,7 +89,7 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
                   confirmPassword: ''
                 }}
                 validationSchema={schemaReset}
-                onSubmit={(values: any, formikBag) => this.changePassword(values, formikBag)}
+                onSubmit={(values, formikBag) => this.changePassword(values, formikBag)}
                 component={formReset}
               />
             </>

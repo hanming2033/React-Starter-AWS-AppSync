@@ -6,7 +6,7 @@ import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { RouteComponentProps } from 'react-router'
 import { AuthProxy } from './AuthProxies/AuthProxy'
-import { TChangeComponent, TSetAuth } from './AuthenticatorRouter'
+import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
 
 // *1 define the form values interface
@@ -16,8 +16,8 @@ interface ISigninFormValues {
 }
 
 export interface ISignInProps {
-  toComp: TChangeComponent
-  setAuth: TSetAuth
+  toComp: TtoComp
+  setAuth: TsetAuth
 }
 
 export interface ISignInState {}

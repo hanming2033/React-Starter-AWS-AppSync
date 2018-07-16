@@ -4,12 +4,15 @@ import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { TChangeComponent } from './AuthenticatorRouter'
+import { TtoComp } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 
 // *1 define the form values interface
 interface IRequestFormValues {
   email: string
+  code: string
+  password: string
+  confirmPassword: string
 }
 interface IResetFormValues {
   email: string
@@ -19,7 +22,7 @@ interface IResetFormValues {
 }
 
 export interface IForgotPasswordProps {
-  toComp: TChangeComponent
+  toComp: TtoComp
 }
 
 export interface IForgotPasswordState {}
@@ -134,7 +137,6 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
         {qryRes => {
           if (qryRes.error) return <h1>Error!!</h1>
           if (!qryRes.data || !qryRes.data.forms) return null
-
           return (
             <>
               {/* 5inject Formik component into view */}
@@ -150,7 +152,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
                 validationSchema={this.state.delivery ? schemaReset : schemaRequest}
                 onSubmit={
                   this.state.delivery
-                    ? (values: any, formikBag) => this.resetPassword(values, formikBag)
+                    ? (values, formikBag) => this.resetPassword(values, formikBag)
                     : (values, formikBag) => this.requestCode(values, formikBag, qryRes)
                 }
                 component={this.state.delivery ? formReset : formRequest}

@@ -5,7 +5,7 @@ import * as yup from 'yup'
 import { Query } from 'react-apollo'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { TChangeComponent } from './AuthenticatorRouter'
+import { TtoComp } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 
 interface IAuthFormValues {
@@ -16,7 +16,7 @@ interface IAuthFormValues {
 export interface ISignupConfirmState {}
 
 export interface ISignupConfirmProps {
-  toComp: TChangeComponent
+  toComp: TtoComp
 }
 
 // yup schema for signup form validation

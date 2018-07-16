@@ -4,7 +4,7 @@ import * as yup from 'yup'
 import { Query, QueryResult } from 'react-apollo'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { TChangeComponent } from './AuthenticatorRouter'
+import { TtoComp } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 
 interface ISignupFormValues {
@@ -14,7 +14,7 @@ interface ISignupFormValues {
 }
 
 export interface ISignupProps {
-  toComp: TChangeComponent
+  toComp: TtoComp
 }
 
 export interface ISignupState {}

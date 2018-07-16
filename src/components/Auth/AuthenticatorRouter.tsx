@@ -10,7 +10,7 @@ import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery, SetAuthMutation } from '../../data/graphql-types'
 import { ChildProps, graphql, compose } from 'react-apollo'
 import VerifyContact from './VerifyContact'
-import { IVerification, ICognitoUserSession } from './AuthProxies/AuthTypes'
+import { IVerification, ICognitoUserSession, ICognitoUser } from './AuthProxies/AuthTypes'
 import { SET_AUTH } from '../../data/actions/Mutations'
 import { JS } from 'aws-amplify'
 
@@ -32,11 +32,11 @@ export type validComponents =
   | 'verifyContact'
   | 'TOTPSetup'
 
-export type TChangeComponent = (newComponent: validComponents, userData?: any) => void
-export type TSetAuth = (verification: IVerification) => void
+export type TtoComp = (newComponent: validComponents, userData?: ICognitoUser) => void
+export type TsetAuth = (verification: IVerification) => void
 
 interface IProtectedRouteState {
-  authData: any
+  userData: ICognitoUser | null
   componentToShow: validComponents
   verification: IVerification
   currentSession: ICognitoUserSession | null
@@ -47,22 +47,21 @@ class Authenticator extends React.Component<
   IProtectedRouteState
 > {
   public state = {
-    authData: null,
+    userData: null,
     componentToShow: 'signUp' as validComponents,
     verification: { verified: {}, unverified: {} },
     currentSession: null
   }
 
-  public toComp: TChangeComponent = (component, userData) => {
+  public toComp: TtoComp = (component, userData) => {
     this.setState({
       componentToShow: component,
-      authData: userData ? userData : this.state.authData
+      userData: userData ? userData : this.state.userData
     })
   }
 
   public setAuth = (verification: IVerification) => {
     const isAuthenticated = !JS.isEmpty(verification.verified)
-    console.log(isAuthenticated)
     this.toComp('verifyContact')
     if (!this.props.mutate) return
     this.props.mutate({ variables: { status: isAuthenticated } })
@@ -90,7 +89,6 @@ class Authenticator extends React.Component<
     const { component: Component, data, ...rest } = this.props
     const { componentToShow } = this.state
     if (!data || !data.auth) return null
-    console.log(data.auth.isAuthenticated)
     if (data.auth.isAuthenticated && this.props.path === '/authenticate') return <Redirect to="/" />
     if (data.auth.isAuthenticated) return <Route {...rest} render={props => <Component {...props} />} />
     if (componentToShow === 'signIn')
@@ -102,7 +100,7 @@ class Authenticator extends React.Component<
       return (
         <Route
           {...rest}
-          render={props => <RequireNewPassword setAuth={this.setAuth} {...props} authData={this.state.authData} toComp={this.toComp} />}
+          render={props => <RequireNewPassword setAuth={this.setAuth} {...props} authData={this.state.userData} toComp={this.toComp} />}
         />
       )
     if (componentToShow === 'verifyContact') return <Route {...rest} render={props => <VerifyContact {...props} />} />
