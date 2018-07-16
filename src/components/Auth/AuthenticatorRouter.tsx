@@ -40,7 +40,6 @@ interface IProtectedRouteState {
   componentToShow: validComponents
   verification: IVerification
   currentSession: ICognitoUserSession | null
-  isAuthenticated: boolean
 }
 
 class Authenticator extends React.Component<
@@ -51,8 +50,7 @@ class Authenticator extends React.Component<
     authData: null,
     componentToShow: 'signUp' as validComponents,
     verification: { verified: {}, unverified: {} },
-    currentSession: null,
-    isAuthenticated: false
+    currentSession: null
   }
 
   public toComp: TChangeComponent = (component, userData) => {
@@ -63,6 +61,7 @@ class Authenticator extends React.Component<
   }
 
   public setAuth = (verification: IVerification, currentSession: ICognitoUserSession | null | undefined) => {
+    // todo:set auth based on verify user only and give this method to other components
     const isAuthenticated = currentSession !== null && currentSession !== undefined && !JS.isEmpty(verification.verified)
     console.log(isAuthenticated)
     if (!this.props.mutate) return
@@ -86,10 +85,12 @@ class Authenticator extends React.Component<
   }
 
   public render() {
-    const { component: Component, ...rest } = this.props
-    const { componentToShow, isAuthenticated } = this.state
-    if (isAuthenticated && this.props.path === '/authenticate') return <Redirect to="/" />
-    if (isAuthenticated) return <Route {...rest} render={props => <Component {...props} />} />
+    const { component: Component, data, ...rest } = this.props
+    const { componentToShow } = this.state
+    if (!data || !data.auth) return null
+    console.log(data.auth.isAuthenticated)
+    if (data.auth.isAuthenticated && this.props.path === '/authenticate') return <Redirect to="/" />
+    if (data.auth.isAuthenticated) return <Route {...rest} render={props => <Component {...props} />} />
     if (componentToShow === 'signIn') return <Route {...rest} render={props => <Signin {...props} toComp={this.toComp} />} />
     if (componentToShow === 'signUp') return <Route {...rest} render={props => <Signup {...props} toComp={this.toComp} />} />
     if (componentToShow === 'forgotPassword') return <Route {...rest} render={props => <Forgot {...props} toComp={this.toComp} />} />
@@ -102,6 +103,6 @@ class Authenticator extends React.Component<
 }
 
 export default compose(
-  graphql<IAuthenticatorProps & RouteProps, GetLocalStatesQuery>(GET_LOCAL_STATES, {}),
+  graphql<IAuthenticatorProps & RouteProps, GetLocalStatesQuery>(GET_LOCAL_STATES, { options: { fetchPolicy: 'network-only' } }),
   graphql<IAuthenticatorProps & RouteProps, SetAuthMutation>(SET_AUTH, {})
 )(Authenticator)
