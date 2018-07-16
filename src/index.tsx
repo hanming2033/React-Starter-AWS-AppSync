@@ -20,12 +20,13 @@ Amplify.configure(awsconfig)
 // import local state
 import defaultState from './data/setup/DefaultState'
 import typeDefs from './data/setup/TypeDefs'
+import { mutationResolvers } from './data/resolvers/Mutations'
 
 // create local state
 const stateLink = createLinkWithCache((cache: any) =>
   withClientState({
     defaults: defaultState,
-    resolvers: {},
+    resolvers: { ...mutationResolvers },
     typeDefs,
     cache
   })

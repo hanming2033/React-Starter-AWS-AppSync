@@ -19,5 +19,8 @@ const typeDefs = `
   type auth {
     isAuthenticated: Boolean!
   }
+  type Mutation {
+    setAuth(status: Boolean!): Boolean!
+  }
 `
 export default typeDefs

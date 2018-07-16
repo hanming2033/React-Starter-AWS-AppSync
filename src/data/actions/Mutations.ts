@@ -24,4 +24,8 @@ import gql from 'graphql-tag'
 //   }
 // `
 
-export const SET_AUTH = gql``
+export const SET_AUTH = gql`
+  mutation SetAuth($status: Boolean!) {
+    setAuth(status: $status) @client
+  }
+`

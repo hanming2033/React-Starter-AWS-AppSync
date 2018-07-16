@@ -1,6 +1,14 @@
 /* tslint:disable */
 //  This file was automatically generated and should not be edited.
 
+export interface SetAuthMutationVariables {
+  status: boolean,
+};
+
+export interface SetAuthMutation {
+  setAuth: boolean,
+};
+
 export interface GetLocalStatesQuery {
   auth:  {
     __typename: "auth",

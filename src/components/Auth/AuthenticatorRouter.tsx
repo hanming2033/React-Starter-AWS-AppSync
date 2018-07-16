@@ -7,11 +7,11 @@ import RequireNewPassword from './RequireNewPassword'
 import Signup from './SignUp'
 import SignupConfirm from './SignupConfirm'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
-import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { QueryResult, ChildProps, graphql } from 'react-apollo'
+import { GetLocalStatesQuery, SetAuthMutation } from '../../data/graphql-types'
+import { ChildProps, graphql, compose } from 'react-apollo'
 import VerifyContact from './VerifyContact'
 import { IVerification, ICognitoUserSession } from './AuthProxies/AuthTypes'
-import { JS } from 'aws-amplify'
+import { SET_AUTH } from '../../data/actions/Mutations'
 
 interface IAuthenticatorProps {
   component:
@@ -42,7 +42,10 @@ interface IProtectedRouteState {
   isAuthenticated: boolean
 }
 
-class Authenticator extends React.Component<ChildProps<IAuthenticatorProps & RouteProps, GetLocalStatesQuery>, IProtectedRouteState> {
+class Authenticator extends React.Component<
+  ChildProps<IAuthenticatorProps & RouteProps, GetLocalStatesQuery & SetAuthMutation>,
+  IProtectedRouteState
+> {
   public state = {
     authData: null,
     componentToShow: 'signUp' as validComponents,
@@ -66,25 +69,27 @@ class Authenticator extends React.Component<ChildProps<IAuthenticatorProps & Rou
   //   }
   // }
 
-  public setAuth = (
-    qryRes: QueryResult<GetLocalStatesQuery>,
-    verification: IVerification,
-    currentSession: ICognitoUserSession | null | undefined
-  ) => {
+  public setAuth = () => {
+    // verification: IVerification, currentSession: ICognitoUserSession | null | undefined
     // set authState based on verification and current session
-    if (qryRes.data && qryRes.data.auth) {
-      const isAuthenticated = currentSession !== null && currentSession !== undefined && !JS.isEmpty(verification.verified)
-      const newData: GetLocalStatesQuery = {
-        ...qryRes.data,
-        auth: {
-          ...qryRes.data.auth,
-          isAuthenticated
-        }
-      }
-      qryRes.client.writeData({
-        data: newData
-      })
-    }
+    // if (qryRes.data && qryRes.data.auth) {
+    //   const isAuthenticated = currentSession !== null && currentSession !== undefined && !JS.isEmpty(verification.verified)
+    //   const newData: GetLocalStatesQuery = {
+    //     ...qryRes.data,
+    //     auth: {
+    //       ...qryRes.data.auth,
+    //       isAuthenticated
+    //     }
+    //   }
+    //   qryRes.client.writeData({
+    //     data: newData
+    //   })
+    // }
+    ////////////////////
+    // TODO: put in logic to set auth based on aws amplify
+    console.log(this.props.mutate)
+    if (!this.props.mutate) return
+    this.props.mutate({ variables: { status: true } })
   }
 
   public componentDidMount() {
@@ -92,7 +97,7 @@ class Authenticator extends React.Component<ChildProps<IAuthenticatorProps & Rou
       console.log('Authenticator Router On Mount: ', res)
       if (!res.data) return
       AuthProxy.verifyUser(res.data.user).then(verification => {
-        // !this.setAuth()
+        this.setAuth()
         this.setState({
           currentSession: res.data && res.data.session ? res.data.session : null,
           verification
@@ -117,4 +122,7 @@ class Authenticator extends React.Component<ChildProps<IAuthenticatorProps & Rou
   }
 }
 
-export default graphql<IAuthenticatorProps & RouteProps, GetLocalStatesQuery>(GET_LOCAL_STATES, {})(Authenticator)
+export default compose(
+  graphql<IAuthenticatorProps & RouteProps, GetLocalStatesQuery>(GET_LOCAL_STATES, {}),
+  graphql<IAuthenticatorProps & RouteProps, SetAuthMutation>(SET_AUTH, {})
+)(Authenticator)
