@@ -1,4 +1,4 @@
-// TODO: finish Verify contact https://github.com/aws/aws-amplify/blob/master/packages/aws-amplify-react/src/Auth/VerifyContact.jsx
+// Future: finish Verify contact https://github.com/aws/aws-amplify/blob/master/packages/aws-amplify-react/src/Auth/VerifyContact.jsx
 // import * as React from 'react'
 // import { Form, Field, Formik,  FormikProps } from 'formik'
 // import { Query } from 'react-apollo'

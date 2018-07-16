@@ -44,16 +44,13 @@ const appSyncLink = createAppSyncLink({
     jwtToken: async () => (await Auth.currentSession()).getAccessToken().getJwtToken()
   },
   complexObjectsCredentials: ''
-
-  // TODO: investigate this
-  // disableOffline: true
 })
 
 const link = ApolloLink.from([stateLink, appSyncLink])
 
-// TODO: investigate this
 // client to write queries without being in a component
-export const client = new AWSAppSyncClient({} as any, { link } as any)
+// disableOffline should be added in the first arg
+const client = new AWSAppSyncClient({} as any, { link } as any)
 
 ReactDOM.render(
   <ApolloProvider client={client}>

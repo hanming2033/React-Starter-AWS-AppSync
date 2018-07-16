@@ -1,4 +1,4 @@
-// // TODO: wait for enable sms
+// // Future wait for enable sms
 // import * as React from 'react'
 // import { Auth, JS } from 'aws-amplify'
 // import { Form, Field, FormikProps, Formik, FormikActions } from 'formik'

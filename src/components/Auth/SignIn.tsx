@@ -70,7 +70,7 @@ class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISi
     const res = await AuthProxy.signIn(values.email, values.password)
     if (res.data) {
       if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
-        this.props.toComp('confirmSignIn') // TODO: check if mfa works
+        this.props.toComp('confirmSignIn') // Future: check if mfa works
       } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
         this.props.toComp('requireNewPassword', res.data)
       } else {
