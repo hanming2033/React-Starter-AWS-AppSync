@@ -6,7 +6,7 @@ interface IResetNewPassword {
   error?: ICognitoError
 }
 
-export const setNewPassword = async (user: any, password: string, requiredAttributes: any): Promise<IResetNewPassword> => {
+export const setNewPassword = async (user: ICognitoUser, password: string, requiredAttributes: [string]): Promise<IResetNewPassword> => {
   try {
     const data = await Auth.completeNewPassword(user, password, requiredAttributes)
     console.log('Proxy setNewPassword Success : ', data)

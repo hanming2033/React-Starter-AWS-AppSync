@@ -7,6 +7,7 @@ import * as yup from 'yup'
 import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 import { verifyUser } from './AuthProxies/verifyUser'
+import { ICognitoUser } from './AuthProxies/AuthTypes'
 
 // *1 define the form values interface
 interface IRequireNewPasswordValues {
@@ -16,7 +17,7 @@ interface IRequireNewPasswordValues {
 
 export interface IRequireNewPasswordProps {
   toComp: TtoComp
-  authData?: any
+  userData?: ICognitoUser | null
   setAuth: TsetAuth
 }
 
@@ -48,9 +49,8 @@ class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequ
   // *4 create onsubmit method
   public changePassword = async (values: IRequireNewPasswordValues, formikBag: FormikActions<IRequireNewPasswordValues>) => {
     formikBag.setSubmitting(true)
-    const userData = this.props.authData
-    const { requiredAttributes } = userData.challengeParam
-    const res = await AuthProxy.setNewPassword(userData, values.password, requiredAttributes)
+    if (!this.props.userData || !this.props.userData.challengeParam) return
+    const res = await AuthProxy.setNewPassword(this.props.userData, values.password, this.props.userData.challengeParam.requiredAttributes)
 
     if (res.data) {
       formikBag.resetForm()

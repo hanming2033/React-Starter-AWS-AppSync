@@ -100,7 +100,7 @@ class Authenticator extends React.Component<
       return (
         <Route
           {...rest}
-          render={props => <RequireNewPassword setAuth={this.setAuth} {...props} authData={this.state.userData} toComp={this.toComp} />}
+          render={props => <RequireNewPassword setAuth={this.setAuth} {...props} userData={this.state.userData} toComp={this.toComp} />}
         />
       )
     if (componentToShow === 'verifyContact') return <Route {...rest} render={props => <VerifyContact {...props} />} />

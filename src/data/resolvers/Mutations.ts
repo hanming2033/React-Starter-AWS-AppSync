@@ -11,7 +11,7 @@ import { GET_LOCAL_STATES } from '../actions/Queries'
 export const mutationResolvers = {
   Mutation: {
     // ! figure out what context should be typed to
-    setAuth: (_: any, variables: SetAuthMutationVariables, context: Context): SetAuthMutation => {
+    setAuth: (_: null, variables: SetAuthMutationVariables, context: Context): SetAuthMutation => {
       const localState: GetLocalStatesQuery = context.cache.readQuery({ query: GET_LOCAL_STATES })
       const newData = {
         ...localState,
