@@ -4,10 +4,23 @@
 const typeDefs = `
   type Query {
     forms: forms
+    nav: nav
+    auth: auth
   }
 
   type forms {
     input_Email: String!
+  }
+
+  type nav {
+    nextPath: String!
+  }
+
+  type auth {
+    isAuthenticated: Boolean!
+  }
+  type Mutation {
+    setAuth(status: Boolean!): Boolean!
   }
 `
 export default typeDefs

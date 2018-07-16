@@ -3,18 +3,23 @@ import { Form, Field, Formik, FormikActions, FormikProps } from 'formik'
 import { Query } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
-import { Auth, JS } from 'aws-amplify'
 import * as yup from 'yup'
-import { AUTH } from './authUtils'
+import { TtoComp, TsetAuth } from './AuthenticatorRouter'
+import { AuthProxy } from './AuthProxies/AuthProxy'
+import { verifyUser } from './AuthProxies/verifyUser'
+import { ICognitoUser } from './AuthProxies/AuthTypes'
 
 // *1 define the form values interface
 interface IRequireNewPasswordValues {
-  email: string
   password: string
   confirmPassword: string
 }
 
-export interface IRequireNewPasswordProps {}
+export interface IRequireNewPasswordProps {
+  toComp: TtoComp
+  userData?: ICognitoUser | null
+  setAuth: TsetAuth
+}
 
 export interface IRequireNewPasswordState {}
 
@@ -40,27 +45,26 @@ const formReset = ({ errors, touched, isSubmitting }: FormikProps<IRequireNewPas
   </Form>
 )
 
-class RequireNewPassword extends React.Component<any, IRequireNewPasswordState> {
+class RequireNewPassword extends React.Component<IRequireNewPasswordProps, IRequireNewPasswordState> {
   // *4 create onsubmit method
-  public resetPassword = async (values: IRequireNewPasswordValues, formikBag: FormikActions<IRequireNewPasswordValues>) => {
+  public changePassword = async (values: IRequireNewPasswordValues, formikBag: FormikActions<IRequireNewPasswordValues>) => {
     formikBag.setSubmitting(true)
-    const userData = this.props.authData
-    const { requiredAttributes } = userData.challengeParam
-    try {
-      const user = await Auth.completeNewPassword(userData, values.password, requiredAttributes)
+    if (!this.props.userData || !this.props.userData.challengeParam) return
+    const res = await AuthProxy.setNewPassword(this.props.userData, values.password, this.props.userData.challengeParam.requiredAttributes)
+
+    if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      if (user.challengeName === 'SMS_MFA') {
-        this.props.onStateChange(AUTH.CONFIRM_SIGNIN, user)
-      } else if (user.challengeName === 'MFA_SETUP') {
-        this.props.onStateChange(AUTH.TOTP_SETUP, user)
+      if (res.data.challengeName === 'SMS_MFA') {
+        this.props.toComp('confirmSignIn')
       } else {
-        this.props.onStateChange(user)
+        const verificationDetail = await verifyUser(res.data)
+        this.props.setAuth(verificationDetail)
       }
-    } catch (err) {
+    } else if (res.error) {
       formikBag.setErrors({
-        password: err.code ? err.message : '',
-        confirmPassword: err.code ? err.message : ''
+        password: res.error.code ? res.error.message : '',
+        confirmPassword: res.error.code ? res.error.message : ''
       })
       formikBag.setFieldValue('password', '', false)
       formikBag.setFieldValue('confirmPassword', '', false)
@@ -68,26 +72,12 @@ class RequireNewPassword extends React.Component<any, IRequireNewPasswordState> 
     }
   }
 
-  public checkContact = async (user: any) => {
-    const data = await Auth.verifiedContact(user)
-    if (!JS.isEmpty(data.verified)) {
-      this.props.onStateChange(AUTH.SIGNIN, user)
-    } else {
-      user = { ...user, ...data }
-      this.props.onStateChange(AUTH.VERIFY_CONTACT, user)
-    }
-  }
-
   public render() {
-    // condition to show component
-    if (this.props.authState !== AUTH.REQUIRE_NEW_PASSWORD) return null
-
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
           if (qryRes.error) return <h1>Error!!</h1>
           if (!qryRes.data || !qryRes.data.forms) return null
-
           return (
             <>
               {/* 5inject Formik component into view */}
@@ -99,7 +89,7 @@ class RequireNewPassword extends React.Component<any, IRequireNewPasswordState> 
                   confirmPassword: ''
                 }}
                 validationSchema={schemaReset}
-                onSubmit={(values: any, formikBag) => this.resetPassword(values, formikBag)}
+                onSubmit={(values, formikBag) => this.changePassword(values, formikBag)}
                 component={formReset}
               />
             </>

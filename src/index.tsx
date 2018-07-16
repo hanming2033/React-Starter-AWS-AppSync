@@ -2,27 +2,31 @@ import * as React from 'react'
 import * as ReactDOM from 'react-dom'
 import App from './App'
 import './index.css'
+import registerServiceWorker from './registerServiceWorker'
 import { ApolloProvider } from 'react-apollo'
 import { ApolloLink } from 'apollo-link'
 // *aws amplify imports - download from mobile hub
-import { Auth } from 'aws-amplify'
+import Amplify, { Auth } from 'aws-amplify'
+import awsconfig from './aws-exports'
 // *aws appsync imports - download from AppSync
-import AWSAppSyncClient, { createAppSyncLink, createLinkWithCache } from 'aws-appsync'
+import { Rehydrated } from 'aws-appsync-react'
+import AWSAppSyncClient, { createAppSyncLink, createLinkWithCache } from 'aws-appsync/lib'
 import { withClientState } from 'apollo-link-state'
-import appSyncConfig from './AppSync.js'
+import appSyncConfig from './AppSync'
+
+// *configure using mobilehub export
+Amplify.configure(awsconfig)
+
 // import local state
 import defaultState from './data/setup/DefaultState'
 import typeDefs from './data/setup/TypeDefs'
-// import { withAuthenticator } from 'aws-amplify-react'
-// other imports
-import registerServiceWorker from './registerServiceWorker'
-
+import { mutationResolvers } from './data/resolvers/Mutations'
 
 // create local state
 const stateLink = createLinkWithCache((cache: any) =>
   withClientState({
     defaults: defaultState,
-    resolvers: {},
+    resolvers: { ...mutationResolvers },
     typeDefs,
     cache
   })
@@ -39,18 +43,20 @@ const appSyncLink = createAppSyncLink({
     // congnito user group allows users to be grouped
     jwtToken: async () => (await Auth.currentSession()).getAccessToken().getJwtToken()
   },
-  // disable offline mode
-  disableOffline: true
+  complexObjectsCredentials: ''
 })
 
 const link = ApolloLink.from([stateLink, appSyncLink])
 
-const client = new AWSAppSyncClient({}, { link })
-
+// client to write queries without being in a component
+// disableOffline should be added in the first arg
+const client = new AWSAppSyncClient({} as any, { link } as any)
 
 ReactDOM.render(
   <ApolloProvider client={client}>
-    <App />
+    <Rehydrated>
+      <App />
+    </Rehydrated>
   </ApolloProvider>,
   document.getElementById('root') as HTMLElement
 )

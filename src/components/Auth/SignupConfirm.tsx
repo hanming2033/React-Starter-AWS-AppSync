@@ -5,7 +5,8 @@ import * as yup from 'yup'
 import { Query } from 'react-apollo'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { AUTH } from './authUtils'
+import { TtoComp } from './AuthenticatorRouter'
+import { AuthProxy } from './AuthProxies/AuthProxy'
 
 interface IAuthFormValues {
   email: string
@@ -13,6 +14,10 @@ interface IAuthFormValues {
 }
 
 export interface ISignupConfirmState {}
+
+export interface ISignupConfirmProps {
+  toComp: TtoComp
+}
 
 // yup schema for signup form validation
 const schemaConfirm = yup.object().shape({
@@ -22,7 +27,7 @@ const schemaConfirm = yup.object().shape({
 const FormConfirm = (formikProps: FormikProps<IAuthFormValues>) => (
   <>
     <Form>
-      <Field name="email" placeholder="Email" disabled />
+      <Field name="email" placeholder="Email" />
       {formikProps.touched.email && formikProps.errors.email}
       <br />
       <Field name="authCode" placeholder="Auth Code" />
@@ -35,19 +40,18 @@ const FormConfirm = (formikProps: FormikProps<IAuthFormValues>) => (
   </>
 )
 
-class SignupConfirm extends React.Component<any, ISignupConfirmState> {
+class SignupConfirm extends React.Component<ISignupConfirmProps, ISignupConfirmState> {
   // method to register user in AWS Cognito
   public confirm = async (values: IAuthFormValues, formikBag: FormikActions<IAuthFormValues>) => {
     formikBag.setSubmitting(true)
-    try {
-      await Auth.confirmSignUp(values.email, values.authCode)
+    const res = await AuthProxy.confirmSignUp(values.email, values.authCode)
+    if (res.data) {
       formikBag.resetForm()
       formikBag.setSubmitting(false)
-      this.props.onStateChange(AUTH.SIGNIN)
-    } catch (err) {
-      // check signin api for returned object
+      this.props.toComp('signIn')
+    } else if (res.error) {
       formikBag.setErrors({
-        authCode: err.message
+        authCode: res.error.message
       })
       formikBag.setSubmitting(false)
       formikBag.setFieldValue('authCode', '', false)
@@ -60,9 +64,6 @@ class SignupConfirm extends React.Component<any, ISignupConfirmState> {
   }
 
   public render() {
-    // condition to show component
-    if (this.props.authState !== AUTH.CONFIRM_SIGNUP) return null
-
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES}>
         {qryRes => {
@@ -74,14 +75,14 @@ class SignupConfirm extends React.Component<any, ISignupConfirmState> {
               <Formik
                 initialValues={{
                   authCode: '',
-                  email
+                  email: email || ''
                 }}
                 validationSchema={schemaConfirm}
                 onSubmit={(values, formikBag) => this.confirm(values, formikBag)}
                 component={FormConfirm}
               />
               <button onClick={() => this.resend(email)}>Resend Code</button>
-              <button onClick={() => this.props.onStateChange(AUTH.SIGNIN)}>Go to SignIn</button>
+              <button onClick={() => this.props.toComp('signIn')}>Go to SignIn</button>
             </>
           )
         }}

@@ -1,6 +1,6 @@
 // *add new global state step 4: add queries, mutations and subscriptions
 
-// import gql from 'graphql-tag'
+import gql from 'graphql-tag'
 
 // export const SIGNUP_USER = gql`
 //   mutation SignupUser($email: String!, $name: String!, $password: String!) {
@@ -23,3 +23,9 @@
 //     }
 //   }
 // `
+
+export const SET_AUTH = gql`
+  mutation SetAuth($status: Boolean!) {
+    setAuth(status: $status) @client
+  }
+`

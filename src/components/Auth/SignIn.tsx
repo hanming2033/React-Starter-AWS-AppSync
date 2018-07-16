@@ -3,9 +3,11 @@ import { Form, Field, Formik, FormikActions, FormikProps } from 'formik'
 import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
-import { Auth, JS } from 'aws-amplify'
 import * as yup from 'yup'
-import { AUTH } from './authUtils'
+import { RouteComponentProps } from 'react-router'
+import { AuthProxy } from './AuthProxies/AuthProxy'
+import { TtoComp, TsetAuth } from './AuthenticatorRouter'
+import { verifyUser } from './AuthProxies/verifyUser'
 
 // *1 define the form values interface
 interface ISigninFormValues {
@@ -13,7 +15,10 @@ interface ISigninFormValues {
   password: string
 }
 
-export interface ISignInProps {}
+export interface ISignInProps {
+  toComp: TtoComp
+  setAuth: TsetAuth
+}
 
 export interface ISignInState {}
 
@@ -38,14 +43,14 @@ const formSignin = ({ errors, touched, isSubmitting }: FormikProps<ISigninFormVa
     <Field type="password" name="password" placeholder="Password" />
     {touched.password && errors.password}
     <br />
-    <button disabled={isSubmitting}>Submit</button>
+    <button disabled={isSubmitting}>Sign In</button>
   </Form>
 )
 
 // *Component
-class SignIn extends React.Component<ISignInProps & any, ISignInState> {
+class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISignInState> {
   // *4 create onsubmit method
-  public signIn = async (
+  public login = async (
     values: ISigninFormValues,
     formikBag: FormikActions<ISigninFormValues>,
     qryRes: QueryResult<GetLocalStatesQuery>
@@ -62,56 +67,41 @@ class SignIn extends React.Component<ISignInProps & any, ISignInState> {
       }
       qryRes.client.writeData({ data: newData })
     }
-    // sign in user to aws conginto
-    try {
-      const user = await Auth.signIn(values.email, values.password)
-      if (user.challengeName === 'SMS_MFA' || user.challengeName === 'SOFTWARE_TOKEN_MFA') {
-        this.props.onStateChange(AUTH.CONFIRM_SIGNIN, user)
-      } else if (user.challengeName === 'NEW_PASSWORD_REQUIRED') {
-        this.props.onStateChange(AUTH.REQUIRE_NEW_PASSWORD, user)
-      } else if (user.challengeName === 'MFA_SETUP') {
-        this.props.onStateChange(AUTH.TOTP_SETUP, user)
+    const res = await AuthProxy.signIn(values.email, values.password)
+    if (res.data) {
+      if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
+        this.props.toComp('confirmSignIn') // Future: check if mfa works
+      } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
+        this.props.toComp('requireNewPassword', res.data)
       } else {
-        this.checkContact(user)
+        const verificationDetail = await verifyUser(res.data)
+        this.props.setAuth(verificationDetail)
       }
-    } catch (err) {
+    } else if (res.error) {
       formikBag.setSubmitting(false)
       formikBag.setFieldValue('password', '', false)
-      // check signin api for returned object
       formikBag.setErrors({
-        email: err.code ? err.message : '',
-        password: err.code === 'NotAuthorizedException' ? err.message : ''
+        email: res.error.code ? res.error.message : '',
+        password: res.error.code === 'NotAuthorizedException' ? res.error.message : ''
       })
 
-      if (err.code === 'UserNotConfirmedException') {
-        this.props.onStateChange(AUTH.CONFIRM_SIGNUP)
+      if (res.error.code === 'UserNotConfirmedException') {
+        this.props.toComp('confirmSignUp')
       }
-    }
-  }
-
-  public checkContact = async (user: any) => {
-    const data = await Auth.verifiedContact(user)
-    if (!JS.isEmpty(data.verified)) {
-      this.props.onStateChange(AUTH.SIGNIN, user)
-    } else {
-      user = { ...user, ...data }
-      this.props.onStateChange(AUTH.VERIFY_CONTACT, user)
     }
   }
 
   public render() {
-    // condition to show component
-    if ([AUTH.SIGNIN, AUTH.SIGNED_OUT, AUTH.SIGNED_UP].indexOf(this.props.authState) === -1) return null
-
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
+          if (qryRes.loading) return <h1>loading...</h1>
           if (qryRes.error) return <h1>Error!!</h1>
           if (!qryRes.data || !qryRes.data.forms) return null
 
           return (
             <>
-              {/* 5inject Formik component into view */}
+              {/* // *5inject Formik component into view */}
               <h1>Sign In</h1>
               <Formik
                 // get current user email from global state first
@@ -120,11 +110,11 @@ class SignIn extends React.Component<ISignInProps & any, ISignInState> {
                   password: ''
                 }}
                 validationSchema={schemaSignup}
-                onSubmit={(values, formikBag) => this.signIn(values, formikBag, qryRes)}
+                onSubmit={(values, formikBag) => this.login(values, formikBag, qryRes)}
                 component={formSignin}
               />
-              <button onClick={() => this.props.onStateChange(AUTH.FORGOT_PASSWORD)}>Forgot Password</button>
-              <button onClick={() => this.props.onStateChange(AUTH.SIGNUP)}>Go to SignUp</button>
+              <button onClick={() => this.props.toComp('forgotPassword')}>Forgot Password</button>
+              <button onClick={() => this.props.toComp('signUp')}>Go to SignUp</button>
             </>
           )
         }}
@@ -133,4 +123,4 @@ class SignIn extends React.Component<ISignInProps & any, ISignInState> {
   }
 }
 
-export default SignIn
+export default Signin

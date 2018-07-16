@@ -1,7 +1,7 @@
-// TODO: finish Verify contact https://github.com/aws/aws-amplify/blob/master/packages/aws-amplify-react/src/Auth/VerifyContact.jsx
+// Future: finish Verify contact https://github.com/aws/aws-amplify/blob/master/packages/aws-amplify-react/src/Auth/VerifyContact.jsx
 // import * as React from 'react'
-// import { Form, Field, Formik, FormikActions, FormikProps } from 'formik'
-// import { Query, QueryResult } from 'react-apollo'
+// import { Form, Field, Formik,  FormikProps } from 'formik'
+// import { Query } from 'react-apollo'
 // import { GetLocalStatesQuery } from '../../data/graphql-types'
 // import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 // import { Auth } from 'aws-amplify'
@@ -135,3 +135,17 @@
 // }
 
 // export default ForgotPassword
+
+import * as React from 'react'
+
+interface IappProps {}
+
+const app: React.SFC<IappProps> = props => {
+  return (
+    <>
+      <p>Verify Contact</p>
+    </>
+  )
+}
+
+export default app
