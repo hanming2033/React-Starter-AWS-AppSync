@@ -12,6 +12,7 @@ import { ChildProps, graphql, compose } from 'react-apollo'
 import VerifyContact from './VerifyContact'
 import { IVerification, ICognitoUserSession } from './AuthProxies/AuthTypes'
 import { SET_AUTH } from '../../data/actions/Mutations'
+import { JS } from 'aws-amplify'
 
 interface IAuthenticatorProps {
   component:
@@ -61,35 +62,11 @@ class Authenticator extends React.Component<
     })
   }
 
-  // public setAuth = (verification: IVerification, currentSession: ICognitoUserSession | null) => {
-  //   if (!JS.isEmpty(verification.verified) && currentSession) {
-  //     this.setState({ isAuthenticated: true })
-  //   } else {
-  //     this.setState({ isAuthenticated: false })
-  //   }
-  // }
-
-  public setAuth = () => {
-    // verification: IVerification, currentSession: ICognitoUserSession | null | undefined
-    // set authState based on verification and current session
-    // if (qryRes.data && qryRes.data.auth) {
-    //   const isAuthenticated = currentSession !== null && currentSession !== undefined && !JS.isEmpty(verification.verified)
-    //   const newData: GetLocalStatesQuery = {
-    //     ...qryRes.data,
-    //     auth: {
-    //       ...qryRes.data.auth,
-    //       isAuthenticated
-    //     }
-    //   }
-    //   qryRes.client.writeData({
-    //     data: newData
-    //   })
-    // }
-    ////////////////////
-    // TODO: put in logic to set auth based on aws amplify
-    console.log(this.props.mutate)
+  public setAuth = (verification: IVerification, currentSession: ICognitoUserSession | null | undefined) => {
+    const isAuthenticated = currentSession !== null && currentSession !== undefined && !JS.isEmpty(verification.verified)
+    console.log(isAuthenticated)
     if (!this.props.mutate) return
-    this.props.mutate({ variables: { status: true } })
+    this.props.mutate({ variables: { status: isAuthenticated } })
   }
 
   public componentDidMount() {
@@ -97,7 +74,9 @@ class Authenticator extends React.Component<
       console.log('Authenticator Router On Mount: ', res)
       if (!res.data) return
       AuthProxy.verifyUser(res.data.user).then(verification => {
-        this.setAuth()
+        if (res.data) {
+          this.setAuth(verification, res.data.session)
+        }
         this.setState({
           currentSession: res.data && res.data.session ? res.data.session : null,
           verification
