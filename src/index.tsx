@@ -50,7 +50,7 @@ const link = ApolloLink.from([stateLink, appSyncLink])
 
 // client to write queries without being in a component
 // disableOffline should be added in the first arg
-const client = new AWSAppSyncClient({} as any, { link } as any)
+export const client = new AWSAppSyncClient({} as any, { link } as any)
 
 ReactDOM.render(
   <ApolloProvider client={client}>

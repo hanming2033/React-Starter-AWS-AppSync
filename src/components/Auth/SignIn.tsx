@@ -9,18 +9,18 @@ import { AuthProxy } from './AuthProxies/AuthProxy'
 import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
 
-// *1 define the form values interface
-interface ISigninFormValues {
-  email: string
-  password: string
-}
-
 export interface ISignInProps {
   toComp: TtoComp
   setAuth: TsetAuth
 }
 
 export interface ISignInState {}
+
+// *1 define the form values interface
+interface ISigninFormValues {
+  email: string
+  password: string
+}
 
 // *2 define yup schema for form validation
 const schemaSignup = yup.object().shape({
