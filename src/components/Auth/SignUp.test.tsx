@@ -69,6 +69,7 @@ describe('<SignUp /> Main Suite', () => {
     const dummyWrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
     const queryWrapper = enzyme.shallow(dummyWrapper.find(Query).prop('children')(qryRes) as React.ReactElement<any>)
     const formikWrapper = enzyme.shallow(FormikSignUp(null, qryRes, jest.fn()))
+    const formikWrapperInner = enzyme.shallow(formikWrapper.find())
     // console.log(queryWrapper.debug())
     console.log(formikWrapper.debug())
     // expect(wrapper.find('undefined')).toHaveLength(1)
