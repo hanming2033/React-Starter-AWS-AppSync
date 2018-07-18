@@ -16,7 +16,7 @@
     "no-implicit-dependencies": false,
     "no-submodule-imports": false,
     "no-empty": {
-      "severity": "warning"
+      "severity": "warn"
     }
   }
 }
