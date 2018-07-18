@@ -65,13 +65,9 @@ describe('<SignUp /> Main Suite', () => {
   })
 
   it('dummy', () => {
-    const dummyWrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
-    const queryWrapper = enzyme.shallow(dummyWrapper.find(Query).prop('children')(qryRes) as React.ReactElement<any>)
-    const formikWrapper = enzyme.shallow(FormikSignUp(qryRes, jest.fn()))
-    // const formikWrapperInner = enzyme.shallow(formikWrapper.find())
-    // console.log(queryWrapper.debug())
-    console.log(formikWrapper.debug())
-    // expect(wrapper.find('undefined')).toHaveLength(1)
+    const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
+    const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(qryRes) as React.ReactElement<any>)
+    console.log(queryWrapper.debug())
   })
 })
 
@@ -90,5 +86,9 @@ describe('Formik Main Suite', () => {
 
   describe('interactions', () => {
     it('should call async function on SignUp button click', () => {})
+  })
+  it('dummy', () => {
+    const formikWrapper = enzyme.shallow(FormikSignUp(qryRes, jest.fn()))
+    console.log(formikWrapper.debug())
   })
 })
