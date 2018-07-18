@@ -51,34 +51,18 @@ const FormSignup = (formikProps: FormikProps<ISignupFormValues>) => (
 )
 
 export const FormikSignUp = (
-  email: string | null,
   qryRes: QueryResult<GetLocalStatesQuery>,
   signupSubmit: (values: ISignupFormValues, formikBag: FormikActions<ISignupFormValues>, qryRes: QueryResult<GetLocalStatesQuery>) => void
 ) => (
   <Formik
     initialValues={{
-      email: email || '',
+      email: (qryRes.data && qryRes.data.forms && qryRes.data.forms.input_Email) || '',
       password: '',
       phone: '+65'
     }}
     validationSchema={schemaSignup}
     onSubmit={(values, formikBag) => signupSubmit(values, formikBag, qryRes)}
-    render={formikProps => (
-      <Form>
-        <Field name="email" placeholder="Email" />
-        {formikProps.touched.email && formikProps.errors.email}
-        <br />
-        <Field name="password" placeholder="Password" type="password" />
-        {formikProps.touched.password && formikProps.errors.password}
-        <br />
-        <Field name="phone" placeholder="Phone" />
-        {formikProps.touched.phone && formikProps.errors.phone}
-        <br />
-        <button type="submit" disabled={formikProps.isSubmitting}>
-          Sign Up
-        </button>
-      </Form>
-    )}
+    render={formikProps => FormSignup(formikProps)}
   />
 )
 
@@ -136,7 +120,7 @@ class Signup extends React.Component<ISignupProps, ISignupState> {
           return (
             <div>
               <h1>Sign Up</h1>
-              {FormikSignUp(qryRes.data.forms.input_Email, qryRes, this.signupSubmit)}
+              {FormikSignUp(qryRes, this.signupSubmit)}
               <button onClick={() => this.props.toComp('confirmSignUp')}>Confirm a Code</button>
               <button onClick={() => this.props.toComp('signIn')}>Go to SignIn</button>
             </div>

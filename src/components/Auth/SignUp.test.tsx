@@ -15,7 +15,7 @@ const data: GetLocalStatesQuery = {
   },
   forms: {
     __typename: 'forms',
-    input_Email: ''
+    input_Email: 'h'
   },
   nav: {
     __typename: 'nav',
@@ -62,14 +62,13 @@ describe('<SignUp /> Main Suite', () => {
   describe('interactions', () => {
     it('should call toComp with arg confirmSignUp on ConfirmCode button click', () => {})
     it('should call toComp with arg signIn on GoToSignIn button click', () => {})
-    // it('should call async function on SignUp button click'),()={})
   })
 
-  it('should have a h3 title Private', () => {
+  it('dummy', () => {
     const dummyWrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
     const queryWrapper = enzyme.shallow(dummyWrapper.find(Query).prop('children')(qryRes) as React.ReactElement<any>)
-    const formikWrapper = enzyme.shallow(FormikSignUp(null, qryRes, jest.fn()))
-    const formikWrapperInner = enzyme.shallow(formikWrapper.find())
+    const formikWrapper = enzyme.shallow(FormikSignUp(qryRes, jest.fn()))
+    // const formikWrapperInner = enzyme.shallow(formikWrapper.find())
     // console.log(queryWrapper.debug())
     console.log(formikWrapper.debug())
     // expect(wrapper.find('undefined')).toHaveLength(1)

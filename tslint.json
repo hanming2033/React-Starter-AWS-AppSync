@@ -3,6 +3,7 @@
   "linterOptions": {
     "exclude": ["config/**/*.js", "node_modules/**/*.ts", "node_modules/*", "src/AppSync.js"]
   },
+
   "rules": {
     "ordered-imports": false,
     "object-literal-sort-keys": false,
@@ -13,6 +14,9 @@
     "curly": false,
     "max-classes-per-file": false,
     "no-implicit-dependencies": false,
-    "no-submodule-imports": false
+    "no-submodule-imports": false,
+    "no-empty": {
+      "severity": "warning"
+    }
   }
 }
