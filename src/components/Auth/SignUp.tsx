@@ -50,6 +50,38 @@ const FormSignup = (formikProps: FormikProps<ISignupFormValues>) => (
   </Form>
 )
 
+export const FormikSignUp = (
+  email: string | null,
+  qryRes: QueryResult<GetLocalStatesQuery>,
+  signupSubmit: (values: ISignupFormValues, formikBag: FormikActions<ISignupFormValues>, qryRes: QueryResult<GetLocalStatesQuery>) => void
+) => (
+  <Formik
+    initialValues={{
+      email: email || '',
+      password: '',
+      phone: '+65'
+    }}
+    validationSchema={schemaSignup}
+    onSubmit={(values, formikBag) => signupSubmit(values, formikBag, qryRes)}
+    render={formikProps => (
+      <Form>
+        <Field name="email" placeholder="Email" />
+        {formikProps.touched.email && formikProps.errors.email}
+        <br />
+        <Field name="password" placeholder="Password" type="password" />
+        {formikProps.touched.password && formikProps.errors.password}
+        <br />
+        <Field name="phone" placeholder="Phone" />
+        {formikProps.touched.phone && formikProps.errors.phone}
+        <br />
+        <button type="submit" disabled={formikProps.isSubmitting}>
+          Sign Up
+        </button>
+      </Form>
+    )}
+  />
+)
+
 class Signup extends React.Component<ISignupProps, ISignupState> {
   // method to register user in AWS Cognito
   public signupSubmit = async (
@@ -99,23 +131,15 @@ class Signup extends React.Component<ISignupProps, ISignupState> {
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES}>
         {qryRes => {
-          if (!qryRes.data || !qryRes.data.forms) return null
+          if (qryRes.loading) return <h3>loading...</h3>
+          if (qryRes.error || !qryRes.data || !qryRes.data.forms) return <h3>Error...</h3>
           return (
-            <>
+            <div>
               <h1>Sign Up</h1>
-              <Formik
-                initialValues={{
-                  email: qryRes.data.forms.input_Email,
-                  password: '',
-                  phone: '+65'
-                }}
-                validationSchema={schemaSignup}
-                onSubmit={(values, formikBag) => this.signupSubmit(values, formikBag, qryRes)}
-                component={FormSignup}
-              />
+              {FormikSignUp(qryRes.data.forms.input_Email, qryRes, this.signupSubmit)}
               <button onClick={() => this.props.toComp('confirmSignUp')}>Confirm a Code</button>
               <button onClick={() => this.props.toComp('signIn')}>Go to SignIn</button>
-            </>
+            </div>
           )
         }}
       </Query>
