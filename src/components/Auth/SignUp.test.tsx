@@ -150,19 +150,29 @@ describe('Formik Main Suite', () => {
   })
 
   describe('dynamic rendering on props and states', () => {
-    const signUpSubmit = jest.fn()
-    it('should have state.email "" by default', () => {
+    it('should have default email ""', () => {
+      const signUpSubmit = jest.fn()
       if (!data || !data.forms) return
       const newData: GetLocalStatesQuery = { ...data, forms: { ...data.forms } }
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: newData }
       const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit))
-      expect(wrapper.state()).toEqual(data)
-      console.log(wrapper.state())
+      expect(wrapper.state('values')).toEqual({ email: '', password: '', phone: '+65' })
     })
-    it('should render abc@abc.com with email passed in for Email Input', () => {})
+    it('should have default email from props', () => {
+      const signUpSubmit = jest.fn()
+      if (!data || !data.forms) return
+      const newData: GetLocalStatesQuery = { ...data, forms: { ...data.forms, input_Email: 'hanming2033@gmail.com' } }
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: newData }
+      const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit))
+      expect(wrapper.state('values')).toEqual({ email: 'hanming2033@gmail.com', password: '', phone: '+65' })
+    })
   })
-
-  describe('interactions', () => {
-    it('should call async function on SignUp button click', () => {})
+  it('dummy', () => {
+    const signUpSubmit = jest.fn()
+    if (!data || !data.forms) return
+    const newData: GetLocalStatesQuery = { ...data, forms: { ...data.forms, input_Email: 'hanming2033@gmail.com' } }
+    const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: newData }
+    const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit))
+    console.log(wrapper.find('[type="submit"]').props())
   })
 })
