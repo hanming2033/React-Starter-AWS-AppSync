@@ -115,7 +115,7 @@ class Signup extends React.Component<ISignupProps, ISignupState> {
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES}>
         {qryRes => {
-          if (qryRes.loading) return <h3>loading...</h3>
+          if (qryRes.loading) return <h3>Loading...</h3>
           if (qryRes.error || !qryRes.data || !qryRes.data.forms) return <h3>Error...</h3>
           return (
             <div>

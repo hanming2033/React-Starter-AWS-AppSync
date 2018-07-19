@@ -5,9 +5,12 @@ import SignUp, { FormikSignUp } from './SignUp'
 import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { client } from '../../AWSApolloClient'
+import { ApolloError } from 'apollo-client'
+import { Formik } from 'formik'
 
 enzyme.configure({ adapter: new Adapter() })
 
+// *stubs start
 const data: GetLocalStatesQuery = {
   auth: {
     __typename: 'auth',
@@ -15,7 +18,7 @@ const data: GetLocalStatesQuery = {
   },
   forms: {
     __typename: 'forms',
-    input_Email: 'h'
+    input_Email: ''
   },
   nav: {
     __typename: 'nav',
@@ -25,7 +28,7 @@ const data: GetLocalStatesQuery = {
 
 const qryRes: QueryResult<GetLocalStatesQuery> = {
   client,
-  data,
+  data: undefined,
   error: undefined,
   loading: false,
   networkStatus: 7,
@@ -38,57 +41,128 @@ const qryRes: QueryResult<GetLocalStatesQuery> = {
   updateQuery: jest.fn()
 }
 
-const toCompFn = jest.fn()
+const apolloError: ApolloError = {
+  name: 'error',
+  message: 'error',
+  graphQLErrors: [{ name: 'error', message: 'error' }],
+  networkError: null,
+  extraInfo: ''
+}
+// *stubs end
 
 describe('<SignUp /> Main Suite', () => {
-  describe('static rendering', () => {
-    describe('rendering on loading state', () => {
-      it('should render Loading... text', () => {})
+  describe('static rendering on loading state', () => {
+    const toCompFn = jest.fn()
+    it('should render Loading... text', () => {
+      const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
+      const newRes = { ...qryRes, loading: true }
+      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      expect(queryWrapper.find('h3').text()).toBe('Loading...')
     })
-    describe('rendering on error state', () => {
-      it('should render Error... text on error', () => {})
-      it('should render Error... text on no data', () => {})
+  })
+  describe('static rendering on error state', () => {
+    const toCompFn = jest.fn()
+    let wrapper: enzyme.ShallowWrapper
+    beforeEach(() => {
+      wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
     })
-    describe('rendering on success state', () => {
-      it('should render SignUp Title', () => {})
-      it('should render formik component', () => {})
-      it('should render ConfirmCode Button', () => {})
-      it('should render GoToLogin Button', () => {})
+    it('should render Error... text on error', () => {
+      const newRes = { ...qryRes, loading: false, error: apolloError }
+      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      expect(queryWrapper.find('h3').text()).toBe('Error...')
+    })
+    it('should render Error... text on no data', () => {
+      const newRes = { ...qryRes, loading: false, error: undefined, data: undefined }
+      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      expect(queryWrapper.find('h3').text()).toBe('Error...')
+    })
+  })
+  describe('static rendering on success state', () => {
+    const toCompFn = jest.fn()
+    let wrapper: enzyme.ShallowWrapper
+    let queryWrapper: enzyme.ShallowWrapper
+    beforeEach(() => {
+      wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
+      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+    })
+    it('should render SignUp Title', () => {
+      expect(queryWrapper.find('h1').text()).toBe('Sign Up')
+    })
+    it('should render formik component', () => {
+      expect(queryWrapper.find(Formik)).toHaveLength(1)
+    })
+    it('should render ConfirmCode Button', () => {
+      expect(queryWrapper.find('button[children="Confirm a Code"]')).toHaveLength(1)
+    })
+    it('should render GoToLogin Button', () => {
+      expect(queryWrapper.find('button[children="Go to SignIn"]')).toHaveLength(1)
     })
   })
 
-  // describe('dynamic rendering on props and states',() => {})
+  // describe('dynamic rendering on props and states', () => {})
 
   describe('interactions', () => {
-    it('should call toComp with arg confirmSignUp on ConfirmCode button click', () => {})
-    it('should call toComp with arg signIn on GoToSignIn button click', () => {})
-  })
-
-  it('dummy', () => {
-    const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
-    const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(qryRes) as React.ReactElement<any>)
-    console.log(queryWrapper.debug())
+    it('should call toComp with arg confirmSignUp on ConfirmCode button click', () => {
+      const toCompFn = jest.fn()
+      const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
+      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      queryWrapper.find('[children="Confirm a Code"]').simulate('click')
+      expect(toCompFn.mock.calls[0][0]).toBe('confirmSignUp')
+    })
+    it('should call toComp with arg signIn on GoToSignIn button click', () => {
+      const toCompFn = jest.fn()
+      const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
+      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      queryWrapper.find('[children="Go to SignIn"]').simulate('click')
+      expect(toCompFn.mock.calls[0][0]).toBe('signIn')
+    })
+    it('should call toComp twice', () => {
+      const toCompFn = jest.fn()
+      const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
+      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      queryWrapper.find('[children="Confirm a Code"]').simulate('click')
+      queryWrapper.find('[children="Go to SignIn"]').simulate('click')
+      expect(toCompFn.mock.calls.length).toBe(2)
+    })
   })
 })
 
 describe('Formik Main Suite', () => {
   describe('static rendering', () => {
-    it('should render Email Input', () => {})
-    it('should render Password Input', () => {})
-    it('should render Phone Number Input', () => {})
-    it('should render SignUp Button', () => {})
+    const signUpSubmit = jest.fn()
+    const wrapper = enzyme.shallow(FormikSignUp(qryRes, signUpSubmit))
+    it('should render Email Input', () => {
+      expect(wrapper.find('[name="email"]')).toHaveLength(1)
+    })
+    it('should render Password Input', () => {
+      expect(wrapper.find('[name="password"]')).toHaveLength(1)
+    })
+    it('should render Phone Number Input', () => {
+      expect(wrapper.find('[name="phone"]')).toHaveLength(1)
+    })
+    it('should render SignUp Button', () => {
+      expect(wrapper.find('[children="Sign Up"]')).toHaveLength(1)
+    })
   })
 
   describe('dynamic rendering on props and states', () => {
-    it('should render "" by default for Email Input', () => {})
+    const signUpSubmit = jest.fn()
+    it('should have state.email "" by default', () => {
+      if (!data || !data.forms) return
+      const newData: GetLocalStatesQuery = { ...data, forms: { ...data.forms } }
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: newData }
+      const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit))
+      expect(wrapper.state()).toEqual(data)
+      console.log(wrapper.state())
+    })
     it('should render abc@abc.com with email passed in for Email Input', () => {})
   })
 
   describe('interactions', () => {
     it('should call async function on SignUp button click', () => {})
-  })
-  it('dummy', () => {
-    const formikWrapper = enzyme.shallow(FormikSignUp(qryRes, jest.fn()))
-    console.log(formikWrapper.debug())
   })
 })
