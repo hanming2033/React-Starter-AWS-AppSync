@@ -4,51 +4,10 @@ import Adapter from 'enzyme-adapter-react-16'
 import SignUp, { FormikSignUp } from './SignUp'
 import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { client } from '../../AWSApolloClient'
-import { ApolloError } from 'apollo-client'
 import { Formik } from 'formik'
+import { qryRes, apolloError, getLocalStateData } from '../../utils/testMocks'
 
 enzyme.configure({ adapter: new Adapter() })
-
-// *stubs start
-const data: GetLocalStatesQuery = {
-  auth: {
-    __typename: 'auth',
-    isAuthenticated: false
-  },
-  forms: {
-    __typename: 'forms',
-    input_Email: ''
-  },
-  nav: {
-    __typename: 'nav',
-    nextPath: ''
-  }
-}
-
-const qryRes: QueryResult<GetLocalStatesQuery> = {
-  client,
-  data: undefined,
-  error: undefined,
-  loading: false,
-  networkStatus: 7,
-  startPolling: jest.fn(),
-  stopPolling: jest.fn(),
-  subscribeToMore: jest.fn(),
-  variables: {},
-  refetch: jest.fn(),
-  fetchMore: jest.fn(),
-  updateQuery: jest.fn()
-}
-
-const apolloError: ApolloError = {
-  name: 'error',
-  message: 'error',
-  graphQLErrors: [{ name: 'error', message: 'error' }],
-  networkError: null,
-  extraInfo: ''
-}
-// *stubs end
 
 describe('<SignUp /> Main Suite', () => {
   describe('static rendering on loading state', () => {
@@ -83,7 +42,7 @@ describe('<SignUp /> Main Suite', () => {
     let queryWrapper: enzyme.ShallowWrapper
     beforeEach(() => {
       wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
-      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
       queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
     })
     it('should render SignUp Title', () => {
@@ -106,7 +65,7 @@ describe('<SignUp /> Main Suite', () => {
     it('should call toComp with arg confirmSignUp on ConfirmCode button click', () => {
       const toCompFn = jest.fn()
       const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
-      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
       const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
       queryWrapper.find('[children="Confirm a Code"]').simulate('click')
       expect(toCompFn.mock.calls[0][0]).toBe('confirmSignUp')
@@ -114,7 +73,7 @@ describe('<SignUp /> Main Suite', () => {
     it('should call toComp with arg signIn on GoToSignIn button click', () => {
       const toCompFn = jest.fn()
       const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
-      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
       const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
       queryWrapper.find('[children="Go to SignIn"]').simulate('click')
       expect(toCompFn.mock.calls[0][0]).toBe('signIn')
@@ -122,7 +81,7 @@ describe('<SignUp /> Main Suite', () => {
     it('should call toComp twice', () => {
       const toCompFn = jest.fn()
       const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
-      const newRes = { ...qryRes, loading: false, error: undefined, data }
+      const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
       const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
       queryWrapper.find('[children="Confirm a Code"]').simulate('click')
       queryWrapper.find('[children="Go to SignIn"]').simulate('click')
@@ -134,7 +93,8 @@ describe('<SignUp /> Main Suite', () => {
 describe('Formik Main Suite', () => {
   describe('static rendering', () => {
     const signUpSubmit = jest.fn()
-    const wrapper = enzyme.shallow(FormikSignUp(qryRes, signUpSubmit))
+    const toComp = jest.fn()
+    const wrapper = enzyme.shallow(FormikSignUp(qryRes, signUpSubmit, { toComp }))
     it('should render Email Input', () => {
       expect(wrapper.find('[name="email"]')).toHaveLength(1)
     })
@@ -152,27 +112,24 @@ describe('Formik Main Suite', () => {
   describe('dynamic rendering on props and states', () => {
     it('should have default email ""', () => {
       const signUpSubmit = jest.fn()
-      if (!data || !data.forms) return
-      const newData: GetLocalStatesQuery = { ...data, forms: { ...data.forms } }
+      const toComp = jest.fn()
+      if (!getLocalStateData || !getLocalStateData.forms) return
+      const newData: GetLocalStatesQuery = { ...getLocalStateData, forms: { ...getLocalStateData.forms } }
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: newData }
-      const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit))
+      const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit, { toComp }))
       expect(wrapper.state('values')).toEqual({ email: '', password: '', phone: '+65' })
     })
     it('should have default email from props', () => {
       const signUpSubmit = jest.fn()
-      if (!data || !data.forms) return
-      const newData: GetLocalStatesQuery = { ...data, forms: { ...data.forms, input_Email: 'hanming2033@gmail.com' } }
+      const toComp = jest.fn()
+      if (!getLocalStateData || !getLocalStateData.forms) return
+      const newData: GetLocalStatesQuery = {
+        ...getLocalStateData,
+        forms: { ...getLocalStateData.forms, input_Email: 'hanming2033@gmail.com' }
+      }
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: newData }
-      const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit))
+      const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit, { toComp }))
       expect(wrapper.state('values')).toEqual({ email: 'hanming2033@gmail.com', password: '', phone: '+65' })
     })
-  })
-  it('dummy', () => {
-    const signUpSubmit = jest.fn()
-    if (!data || !data.forms) return
-    const newData: GetLocalStatesQuery = { ...data, forms: { ...data.forms, input_Email: 'hanming2033@gmail.com' } }
-    const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: newData }
-    const wrapper = enzyme.shallow(FormikSignUp(newRes, signUpSubmit))
-    console.log(wrapper.find('[type="submit"]').props())
   })
 })
