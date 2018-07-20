@@ -9,18 +9,25 @@ import { AuthProxy } from './AuthProxies/AuthProxy'
 import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
 
-// *1 define the form values interface
-interface ISigninFormValues {
-  email: string
-  password: string
-}
-
 export interface ISignInProps {
   toComp: TtoComp
   setAuth: TsetAuth
 }
 
 export interface ISignInState {}
+
+// *1 define interface for form values
+interface ISigninFormValues {
+  email: string
+  password: string
+}
+
+type TsubmitFn = (
+  values: ISigninFormValues,
+  formikBag: FormikActions<ISigninFormValues>,
+  qryRes: QueryResult<GetLocalStatesQuery>,
+  props: ISignInProps
+) => void
 
 // *2 define yup schema for form validation
 const schemaSignup = yup.object().shape({
@@ -34,88 +41,89 @@ const schemaSignup = yup.object().shape({
     .required('Password is required')
 })
 
-// *3 create actual form outsourced from Formik
-const formSignin = ({ errors, touched, isSubmitting }: FormikProps<ISigninFormValues>) => (
-  <Form>
-    <Field name="email" placeholder="Email" />
-    {touched.email && errors.email}
-    <br />
-    <Field type="password" name="password" placeholder="Password" />
-    {touched.password && errors.password}
-    <br />
-    <button disabled={isSubmitting}>Sign In</button>
-  </Form>
+// *3 create actual formik form component
+export const FormikSignIn = (qryRes: QueryResult<GetLocalStatesQuery>, submit: TsubmitFn, props: ISignInProps) => (
+  <Formik
+    // get current user email from global state first
+    initialValues={{
+      email: (qryRes.data && qryRes.data.forms && (qryRes.data.forms.input_Email as string)) || '',
+      password: ''
+    }}
+    validationSchema={schemaSignup}
+    onSubmit={(values, formikBag) => submit(values, formikBag, qryRes, props)}
+    render={formikProps => (
+      <Form>
+        <Field name="email" placeholder="Email" />
+        {formikProps.touched.email && formikProps.errors.email}
+        <br />
+        <Field type="password" name="password" placeholder="Password" />
+        {formikProps.touched.password && formikProps.errors.password}
+        <br />
+        <button disabled={formikProps.isSubmitting}>Sign In</button>
+      </Form>
+    )}
+  />
 )
 
-// *Component
-class Signin extends React.Component<ISignInProps & RouteComponentProps<{}>, ISignInState> {
-  // *4 create onsubmit method
-  public login = async (
-    values: ISigninFormValues,
-    formikBag: FormikActions<ISigninFormValues>,
-    qryRes: QueryResult<GetLocalStatesQuery>
-  ) => {
-    formikBag.setSubmitting(true)
-    // store username in apollo link state on submit
-    if (qryRes.data && qryRes.data.forms) {
-      const newData: GetLocalStatesQuery = {
-        ...qryRes.data,
-        forms: {
-          ...qryRes.data.forms,
-          input_Email: values.email
-        }
+// *4 create onsubmit method
+const loginSubmit = async (
+  values: ISigninFormValues,
+  formikBag: FormikActions<ISigninFormValues>,
+  qryRes: QueryResult<GetLocalStatesQuery>,
+  props: ISignInProps
+) => {
+  formikBag.setSubmitting(true)
+  // store username in apollo link state on submit
+  if (qryRes.data && qryRes.data.forms) {
+    const newData: GetLocalStatesQuery = {
+      ...qryRes.data,
+      forms: {
+        ...qryRes.data.forms,
+        input_Email: values.email
       }
-      qryRes.client.writeData({ data: newData })
     }
-    const res = await AuthProxy.signIn(values.email, values.password)
-    if (res.data) {
-      if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
-        this.props.toComp('confirmSignIn') // Future: check if mfa works
-      } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
-        this.props.toComp('requireNewPassword', res.data)
-      } else {
-        const verificationDetail = await verifyUser(res.data)
-        this.props.setAuth(verificationDetail)
-      }
-    } else if (res.error) {
-      formikBag.setSubmitting(false)
-      formikBag.setFieldValue('password', '', false)
-      formikBag.setErrors({
-        email: res.error.code ? res.error.message : '',
-        password: res.error.code === 'NotAuthorizedException' ? res.error.message : ''
-      })
+    qryRes.client.writeData({ data: newData })
+  }
+  const res = await AuthProxy.signIn(values.email, values.password)
+  if (res.data) {
+    if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
+      props.toComp('confirmSignIn') // Future: check if mfa works
+    } else if (res.data.challengeName === 'NEW_PASSWORD_REQUIRED') {
+      props.toComp('requireNewPassword', res.data)
+    } else {
+      const verificationDetail = await verifyUser(res.data)
+      props.setAuth(verificationDetail)
+    }
+  } else if (res.error) {
+    formikBag.setSubmitting(false)
+    formikBag.setFieldValue('password', '', false)
+    formikBag.setErrors({
+      email: res.error.code ? res.error.message : '',
+      password: res.error.code === 'NotAuthorizedException' ? res.error.message : ''
+    })
 
-      if (res.error.code === 'UserNotConfirmedException') {
-        this.props.toComp('confirmSignUp')
-      }
+    if (res.error.code === 'UserNotConfirmedException') {
+      props.toComp('confirmSignUp')
     }
   }
+}
 
+// *Component
+class Signin extends React.Component<ISignInProps, ISignInState> {
   public render() {
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
-          if (qryRes.loading) return <h1>loading...</h1>
-          if (qryRes.error) return <h1>Error!!</h1>
-          if (!qryRes.data || !qryRes.data.forms) return null
+          if (qryRes.loading) return <h1>Loading...</h1>
+          if (qryRes.error || !qryRes.data) return <h1>Error...</h1>
 
           return (
-            <>
-              {/* // *5inject Formik component into view */}
+            <div>
               <h1>Sign In</h1>
-              <Formik
-                // get current user email from global state first
-                initialValues={{
-                  email: qryRes.data.forms.input_Email || '',
-                  password: ''
-                }}
-                validationSchema={schemaSignup}
-                onSubmit={(values, formikBag) => this.login(values, formikBag, qryRes)}
-                component={formSignin}
-              />
+              {FormikSignIn(qryRes, loginSubmit, this.props)}
               <button onClick={() => this.props.toComp('forgotPassword')}>Forgot Password</button>
-              <button onClick={() => this.props.toComp('signUp')}>Go to SignUp</button>
-            </>
+              <button onClick={() => this.props.toComp('signUp')}>Go To SignUp</button>
+            </div>
           )
         }}
       </Query>
