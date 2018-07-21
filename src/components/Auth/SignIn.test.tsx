@@ -157,7 +157,6 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
       await wait(0)
       mounted.update()
       expect(mounted.find('[children="Minimum 6 characters"]').length).toBe(1)
-      console.log(mounted.debug())
     })
   })
   describe('Submit Button Suite', () => {
@@ -173,32 +172,5 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
       expect(mounted.find('button').props().disabled).toBe(false)
     })
-    it('should call submitFn on click', () => {
-      const subtmitFn = jest.fn()
-      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      console.log(mounted.state())
-      mounted.find('button').simulate('click')
-      expect(subtmitFn).toBeCalled()
-    })
-    it('should disable the button on click', () => {})
   })
 })
-
-// describe('Mounting', () => {
-//   it('should render form', async () => {
-//     const subtmitFn = jest.fn()
-//     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-//     const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-//     mounted
-//       .find('input[name="email"]')
-//       .simulate('change', { persist: () => undefined, target: { name: 'email', value: 'hanming@gmail.com' } })
-//     console.log(mounted.state())
-//     mounted.find('input[name="email"]').simulate('blur', { persist: () => undefined, target: { name: 'email' } })
-//     await wait(0)
-//     console.log(mounted.state())
-//     // mounted.find('button').simulate('click')
-//     mounted.update()
-//     console.log(mounted.debug())
-//   })
-// })
