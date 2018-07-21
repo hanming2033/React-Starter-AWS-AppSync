@@ -7,7 +7,7 @@
     "aws-amplify": "^0.4.4",
     "aws-appsync": "^1.2.1",
     "aws-appsync-react": "^1.0.21",
-    "formik": "^0.11.11",
+    "formik": "^1.0.1",
     "graphql-tag": "^2.9.2",
     "react": "^16.4.1",
     "react-apollo": "^2.1.5",
@@ -24,7 +24,6 @@
     "gentypes": "node src/scripts/buildSchema.js && apollo-codegen generate src/**/*.{tsx,ts} --schema schemaDump.json --add-typename --target typescript --output src/data/graphql-types.ts && rm schemaDump.json"
   },
   "devDependencies": {
-    "@commercetools/enzyme-extensions": "^3.0.1",
     "@types/enzyme": "^3.1.11",
     "@types/enzyme-adapter-react-16": "^1.0.2",
     "@types/jest": "^23.1.0",
@@ -33,11 +32,14 @@
     "@types/react-dom": "^16.0.6",
     "@types/react-router": "^4.0.28",
     "@types/react-router-dom": "^4.2.7",
+    "@types/react-test-renderer": "^16.0.1",
     "@types/yup": "^0.24.7",
     "enzyme": "^3.3.0",
-    "enzyme-adapter-react-16": "^1.1.1",
+    "enzyme-adapter-react-16": "npm:enzyme-react-adapter-future",
     "graphql-tools": "^3.0.2",
     "merge-graphql-schemas": "^1.5.1",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "waait": "^1.0.2",
+    "wait-for-expect": "^1.0.0"
   }
 }

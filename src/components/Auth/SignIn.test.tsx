@@ -3,8 +3,10 @@ import * as enzyme from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
 import SignIn, { FormikSignIn } from './SignIn'
 import { Query, QueryResult } from 'react-apollo'
+
 import { qryRes, apolloError, getLocalStateData } from '../../utils/testMocks'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
+import wait from 'waait'
 
 enzyme.configure({ adapter: new Adapter() })
 
@@ -87,22 +89,116 @@ describe('<SignIn /> Main Suite', () => {
 // * -- rendering: how props and state(prefer interaction on component unless interaction happen in children) affect this component
 // * -- interaction: how feature's interaction affect itself, other component, state(prefer rendering unless rendering in children), prop method call
 
-describe('<Formik SignIn /> Main Suite', () => {
-  it('test', () => {
+describe('<Formik SignIn /> Main Suite(Mounting)', () => {
+  describe('Email Input Suite', async () => {
+    const subtmitFn = jest.fn()
+    it('should render "" if qyrRes has "" email field', () => {
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      const inputEmail = mounted.find('input[name="email"]')
+      expect(inputEmail.props().value).toBe('')
+    })
+    it('should render "hanming2033@gmail.com" if qyrRes has "hanming2033@gmail.com" email field', () => {
+      if (!getLocalStateData || !getLocalStateData.forms) return
+      const newRes: QueryResult<GetLocalStatesQuery> = {
+        ...qryRes,
+        data: { ...getLocalStateData, forms: { ...getLocalStateData.forms, input_Email: 'hanming2033@gmail.com' } }
+      }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      const inputEmail = mounted.find('input[name="email"]')
+      expect(inputEmail.props().value).toBe('hanming2033@gmail.com')
+    })
+    it('should render "abc" on input change "abc"', () => {
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      mounted.find('input[name="email"]').simulate('change', { persist: () => undefined, target: { name: 'email', value: 'abc' } })
+      expect(mounted.find('input[name="email"]').props().value).toBe('abc')
+    })
+    it('should render "required error" on input change "" and blur', async () => {
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      mounted.find('input[name="email"]').simulate('change', { persist: () => undefined, target: { name: 'email', value: '' } })
+      mounted.find('input[name="email"]').simulate('blur', { persist: () => undefined, target: { name: 'email' } })
+      await wait(0)
+      mounted.update()
+      expect(mounted.find('[children="Email is required"]').length).toBe(1)
+    })
+    it('should render "not valid email error" on input change "abc" and blur', async () => {
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      mounted.find('input[name="email"]').simulate('change', { persist: () => undefined, target: { name: 'email', value: 'abc' } })
+      mounted.find('input[name="email"]').simulate('blur', { persist: () => undefined, target: { name: 'email' } })
+      await wait(0)
+      mounted.update()
+      expect(mounted.find('[children="Not a valid email"]').length).toBe(1)
+    })
+  })
+  describe('Password Input Suite', () => {
     const subtmitFn = jest.fn()
     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-    const wrapper = enzyme.shallow(FormikSignIn(newRes, subtmitFn, {} as any))
-    wrapper.setState({ touched: { email: true }, errors: { email: 'error' } })
-    console.log(wrapper.state())
-    console.log(wrapper.debug())
+    const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+    it('should render "" if qyrRes has "" password field', () => {
+      expect(mounted.find('input[name="password"]').props().value).toBe('')
+    })
+    it('should render "abc" on input change "abc"', () => {
+      mounted.find('input[name="password"]').simulate('change', { persist: () => undefined, target: { name: 'password', value: 'abc' } })
+      expect(mounted.find('input[name="password"]').props().value).toBe('abc')
+    })
+    it('should render "required error" on input change "" and blur', async () => {
+      mounted.find('input[name="password"]').simulate('change', { persist: () => undefined, target: { name: 'password', value: '' } })
+      mounted.find('input[name="password"]').simulate('blur', { persist: () => undefined, target: { name: 'password' } })
+      await wait(0)
+      mounted.update()
+      expect(mounted.find('[children="Password is required"]').length).toBe(1)
+    })
+    it('should render "too short error" on input change "abc" and blur', async () => {
+      mounted.find('input[name="password"]').simulate('change', { persist: () => undefined, target: { name: 'password', value: 'abc' } })
+      mounted.find('input[name="password"]').simulate('blur', { persist: () => undefined, target: { name: 'password' } })
+      await wait(0)
+      mounted.update()
+      expect(mounted.find('[children="Minimum 6 characters"]').length).toBe(1)
+      console.log(mounted.debug())
+    })
   })
-  describe('Feature 1 Suite', () => {
-    it('should render something on some props', () => {})
-    it('should render something on some state', () => {})
-  })
-  describe('Feature 2 Suite', () => {
-    it('should call prop method with args xxx', () => {})
-    it('should cause component x to render', () => {})
-    it('should cause state to change to xxx', () => {})
+  describe('Submit Button Suite', () => {
+    it('should render a button with "Sign In"', () => {
+      const subtmitFn = jest.fn()
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      expect(mounted.find('button').text()).toBe('Sign In')
+    })
+    it('should have disable state = false initially', () => {
+      const subtmitFn = jest.fn()
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      expect(mounted.find('button').props().disabled).toBe(false)
+    })
+    it('should call submitFn on click', () => {
+      const subtmitFn = jest.fn()
+      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+      console.log(mounted.state())
+      mounted.find('button').simulate('click')
+      expect(subtmitFn).toBeCalled()
+    })
+    it('should disable the button on click', () => {})
   })
 })
+
+// describe('Mounting', () => {
+//   it('should render form', async () => {
+//     const subtmitFn = jest.fn()
+//     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
+//     const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
+//     mounted
+//       .find('input[name="email"]')
+//       .simulate('change', { persist: () => undefined, target: { name: 'email', value: 'hanming@gmail.com' } })
+//     console.log(mounted.state())
+//     mounted.find('input[name="email"]').simulate('blur', { persist: () => undefined, target: { name: 'email' } })
+//     await wait(0)
+//     console.log(mounted.state())
+//     // mounted.find('button').simulate('click')
+//     mounted.update()
+//     console.log(mounted.debug())
+//   })
+// })

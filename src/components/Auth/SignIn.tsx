@@ -1,10 +1,9 @@
 import * as React from 'react'
-import { Form, Field, Formik, FormikActions, FormikProps } from 'formik'
+import { Form, Field, Formik, FormikActions } from 'formik'
 import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { RouteComponentProps } from 'react-router'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
@@ -54,10 +53,10 @@ export const FormikSignIn = (qryRes: QueryResult<GetLocalStatesQuery>, submit: T
     render={formikProps => (
       <Form>
         <Field name="email" placeholder="Email" />
-        {formikProps.touched.email && formikProps.errors.email}
+        {formikProps.touched.email && <span>{formikProps.errors.email}</span>}
         <br />
         <Field type="password" name="password" placeholder="Password" />
-        {formikProps.touched.password && formikProps.errors.password}
+        {formikProps.touched.password && <span>{formikProps.errors.password}</span>}
         <br />
         <button disabled={formikProps.isSubmitting}>Sign In</button>
       </Form>
