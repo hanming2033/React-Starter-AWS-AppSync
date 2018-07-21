@@ -3,10 +3,12 @@ import * as enzyme from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
 import SignIn, { FormikSignIn } from './SignIn'
 import { Query, QueryResult } from 'react-apollo'
-
 import { qryRes, apolloError, getLocalStateData } from '../../utils/testMocks'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import wait from 'waait'
+
+import enzymeSerializer from 'enzyme-to-json/serializer'
+expect.addSnapshotSerializer(enzymeSerializer)
 
 enzyme.configure({ adapter: new Adapter() })
 
@@ -95,8 +97,7 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
     it('should render "" if qyrRes has "" email field', () => {
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      const inputEmail = mounted.find('input[name="email"]')
-      expect(inputEmail.props().value).toBe('')
+      expect(mounted).toMatchSnapshot()
     })
     it('should render "hanming2033@gmail.com" if qyrRes has "hanming2033@gmail.com" email field', () => {
       if (!getLocalStateData || !getLocalStateData.forms) return
@@ -105,8 +106,7 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
         data: { ...getLocalStateData, forms: { ...getLocalStateData.forms, input_Email: 'hanming2033@gmail.com' } }
       }
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      const inputEmail = mounted.find('input[name="email"]')
-      expect(inputEmail.props().value).toBe('hanming2033@gmail.com')
+      expect(mounted).toMatchSnapshot()
     })
     it('should render "abc" on input change "abc"', () => {
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
@@ -138,11 +138,11 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
     const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
     it('should render "" if qyrRes has "" password field', () => {
-      expect(mounted.find('input[name="password"]').props().value).toBe('')
+      expect(mounted).toMatchSnapshot()
     })
     it('should render "abc" on input change "abc"', () => {
       mounted.find('input[name="password"]').simulate('change', { persist: () => undefined, target: { name: 'password', value: 'abc' } })
-      expect(mounted.find('input[name="password"]').props().value).toBe('abc')
+      expect(mounted).toMatchSnapshot()
     })
     it('should render "required error" on input change "" and blur', async () => {
       mounted.find('input[name="password"]').simulate('change', { persist: () => undefined, target: { name: 'password', value: '' } })
@@ -164,13 +164,13 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
       const subtmitFn = jest.fn()
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      expect(mounted.find('button').text()).toBe('Sign In')
+      expect(mounted).toMatchSnapshot()
     })
     it('should have disable state = false initially', () => {
       const subtmitFn = jest.fn()
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      expect(mounted.find('button').props().disabled).toBe(false)
+      expect(mounted).toMatchSnapshot()
     })
   })
 })
