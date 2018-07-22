@@ -2,17 +2,12 @@ import * as React from 'react'
 import * as enzyme from 'enzyme'
 import Adapter from 'enzyme-adapter-react-16'
 import enzymeSerializer from 'enzyme-to-json/serializer'
-import { Query, QueryResult } from '../../../node_modules/react-apollo'
-import { GetLocalStatesQuery } from '../../data/graphql-types'
-import { qryRes, getLocalStateData, mtnRes } from '../../utils/testMocks'
-import { Mutation } from 'react-apollo'
-import { SET_AUTH } from '../../data/actions/Mutations'
-import { Route } from 'react-router'
+import { getLocalStateData, qryRes } from '../../utils/testMocks'
 import { createBrowserHistory, createLocation } from 'history'
-import AuthenticatorRouter, { Authenticator } from './AuthenticatorRouter'
-import wait from 'waait'
+import { Authenticator } from './AuthenticatorRouter'
 import Protected from '../DummyFiles/Protected'
-import { NetworkStatus } from '../../../node_modules/apollo-client'
+import { Route } from 'react-router'
+import { Query } from '../../../node_modules/react-apollo'
 
 expect.addSnapshotSerializer(enzymeSerializer)
 enzyme.configure({ adapter: new Adapter() })
@@ -39,47 +34,17 @@ const routeProps = {
 }
 
 describe('<MainComponent /> Main Suite', () => {
-  // it('dummy', async () => {
-  //   const newRes: QueryResult<GetLocalStatesQuery> = {
-  //     ...qryRes,
-  //     data: {
-  //       ...getLocalStateData,
-  //       auth: { __typename: 'auth', isAuthenticated: false },
-  //       forms: { __typename: 'forms', input_Email: '' }
-  //     }
-  //   }
-  //   const wrapper = enzyme.shallow(<AuthenticatorRouter />)
-  //   const wrapper2 = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-  //   const wrapper3 = enzyme.shallow(wrapper2.find(Mutation).prop('children')(SET_AUTH, mtnRes) as React.ReactElement<{}>)
-  //   const holder = wrapper3.find(Route).prop('render')
-  //   // wrapper3.update()
-  //   if (!holder) return
-  //   const wrapper3Instance = wrapper3.instance() as Authenticator
-  //   console.log(wrapper3.state('componentToShow'))
-  //   wrapper3Instance.toComp('forgotPassword')
-  //   console.log(wrapper3.state('componentToShow'))
-  //   const wrapper4 = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
-  //   const wrapper5 = enzyme.shallow(wrapper4.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-  //   console.log(wrapper5.debug())
-  // })
   it('dummy', async () => {
     const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
     wrapper.setProps({ data: getLocalStateData })
-    const routeWrapper = enzyme
-    console.log(enzyme.shallow(wrapper.find(Route).prop('render')()))
-
-    // const wrapper2 = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    // const wrapper3 = enzyme.shallow(wrapper2.find(Mutation).prop('children')(SET_AUTH, mtnRes) as React.ReactElement<{}>)
-    // const holder = wrapper3.find(Route).prop('render')
-    // // wrapper3.update()
-    // if (!holder) return
-    // const wrapper3Instance = wrapper3.instance() as Authenticator
-    // console.log(wrapper3.state('componentToShow'))
-    // wrapper3Instance.toComp('forgotPassword')
-    // console.log(wrapper3.state('componentToShow'))
-    // const wrapper4 = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
-    // const wrapper5 = enzyme.shallow(wrapper4.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    // console.log(wrapper5.debug())
+    const wrapperInstance = wrapper.instance() as Authenticator
+    wrapperInstance.toComp('forgotPassword')
+    const holder = wrapper.find(Route).prop('render')
+    if (!holder) return
+    const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
+    const newRes = { ...qryRes, data: getLocalStateData }
+    const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+    console.log(queryWrapper.debug())
   })
   // rendering based on different state and props of main component
   // test here is state and props does not directly affects children
