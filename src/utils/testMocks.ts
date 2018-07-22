@@ -36,6 +36,13 @@ export const qryRes: QueryResult<GetLocalStatesQuery> = {
   updateQuery: jest.fn()
 }
 
+export const mtnRes = {
+  data: undefined,
+  error: undefined,
+  loading: false,
+  called: false
+}
+
 export const apolloError: ApolloError = {
   name: 'error',
   message: 'error',
