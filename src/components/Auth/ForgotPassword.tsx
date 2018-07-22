@@ -7,13 +7,18 @@ import * as yup from 'yup'
 import { TtoComp } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 
-// *1 define the form values interface
+export interface IForgotPasswordProps {
+  toComp: TtoComp
+}
+export interface IForgotPasswordState {
+  delivery: any | null
+}
+
+// *1.1 define interface for request form values
 interface IRequestFormValues {
   email: string
-  code: string
-  password: string
-  confirmPassword: string
 }
+// *1.2 define interface for reset form values
 interface IResetFormValues {
   email: string
   code: string
@@ -21,19 +26,14 @@ interface IResetFormValues {
   confirmPassword: string
 }
 
-export interface IForgotPasswordProps {
-  toComp: TtoComp
-}
-
-export interface IForgotPasswordState {}
-
-// *2 define yup schema for form validation
+// *2.1 define yup schema for request form validation
 const schemaRequest = yup.object().shape({
   email: yup
     .string()
     .email('Not a valid email')
     .required('Email is required')
 })
+// *2.2 define yup schema for request form validation
 const schemaReset = yup.object().shape({
   email: yup
     .string()
@@ -47,116 +47,137 @@ const schemaReset = yup.object().shape({
     .required('Password confirm is required')
 })
 
-// *3 create actual form outsourced from Formik
-const formRequest = ({ errors, touched, isSubmitting }: FormikProps<IRequestFormValues>) => (
-  <Form>
-    <Field name="email" placeholder="Email" />
-    {touched.email && errors.email}
-    <br />
-    <button disabled={isSubmitting}>Send Code</button>
-  </Form>
+// *3.1 create actual request formik form component
+export const FormikRequestCode = (
+  qryRes: QueryResult<GetLocalStatesQuery>,
+  setState: (newState: any) => void,
+  toComp: (component: string) => void
+) => (
+  <Formik
+    initialValues={{
+      email: (qryRes.data && qryRes.data.forms && qryRes.data.forms.input_Email) || ''
+    }}
+    validationSchema={schemaRequest}
+    onSubmit={(values, formikBag) => requestCode(values, formikBag, qryRes, setState, toComp)}
+    render={({ errors, touched, isSubmitting }: FormikProps<IRequestFormValues>) => (
+      <Form>
+        <Field name="email" placeholder="Email" />
+        <span>{touched.email && errors.email}</span>
+        <br />
+        <button disabled={isSubmitting}>Send Code</button>
+      </Form>
+    )}
+  />
 )
-const formReset = ({ errors, touched, isSubmitting }: FormikProps<IResetFormValues>) => (
-  <Form>
-    <Field name="email" placeholder="Email" disabled />
-    {touched.email && errors.email}
-    <br />
-    <Field name="code" placeholder="Auth Code" />
-    {touched.code && errors.code}
-    <br />
-    <Field type="password" name="password" placeholder="Password" />
-    {touched.password && errors.password}
-    <br />
-    <Field type="password" name="confirmPassword" placeholder="Password" />
-    {touched.confirmPassword && errors.confirmPassword}
-    <br />
-    <button disabled={isSubmitting}>Reset Password</button>
-  </Form>
+// *3.2 create actual reset formik form component
+export const FormikResetPassword = (email: string, setState: (newState: any) => void, toComp: (component: string) => void) => (
+  <Formik
+    initialValues={{
+      email: email || '',
+      code: '',
+      password: '',
+      confirmPassword: ''
+    }}
+    validationSchema={schemaReset}
+    onSubmit={(values, formikBag) => resetPassword(values, formikBag, setState, toComp)}
+    render={({ errors, touched, isSubmitting }: FormikProps<IResetFormValues>) => (
+      <Form>
+        <Field name="email" placeholder="Email" disabled />
+        <span>{touched.email && errors.email}</span>
+        <br />
+        <Field name="code" placeholder="Auth Code" />
+        <span>{touched.code && errors.code}</span>
+        <br />
+        <Field type="password" name="password" placeholder="Password" />
+        <span>{touched.password && errors.password}</span>
+        <br />
+        <Field type="password" name="confirmPassword" placeholder="Password" />
+        <span>{touched.confirmPassword && errors.confirmPassword}</span>
+        <br />
+        <button disabled={isSubmitting}>Reset Password</button>
+      </Form>
+    )}
+  />
 )
 
+// *4.1 request code submit function
+const requestCode = async (
+  values: IRequestFormValues,
+  formikBag: FormikActions<IRequestFormValues>,
+  qryRes: QueryResult<GetLocalStatesQuery>,
+  setState: (newState: any) => void,
+  toComp: (component: string) => void
+) => {
+  formikBag.setSubmitting(true)
+  // store email in local state
+  if (!qryRes.data || !qryRes.data.forms) return
+  const newData = {
+    ...qryRes.data,
+    forms: {
+      ...qryRes.data.forms,
+      input_Email: values.email
+    }
+  }
+  qryRes.client.writeData({ data: newData })
+
+  const res = await AuthProxy.requestForgotPasswordCode(values.email)
+  if (res.data) {
+    setState({ delivery: res.data.CodeDeliveryDetails })
+    formikBag.resetForm()
+    formikBag.setSubmitting(false)
+  } else if (res.error) {
+    formikBag.setErrors({
+      email: (res.error.message as string).includes('Username/client') ? 'Email Not Found' : ''
+    })
+    formikBag.setFieldValue('email', '', false)
+    formikBag.setSubmitting(false)
+    if (res.error && (res.error.message as string).includes('no registered/verified')) {
+      toComp('confirmSignUp')
+    }
+  }
+}
+
+// *4.2 reset password submit function
+const resetPassword = async (
+  values: IResetFormValues,
+  formikBag: FormikActions<IResetFormValues>,
+  setState: (newState: any) => void,
+  toComp: (component: string) => void
+) => {
+  formikBag.setSubmitting(true)
+  const res = await AuthProxy.resetPassword(values.email, values.code, values.password)
+  if (res.data) {
+    formikBag.resetForm()
+    formikBag.setSubmitting(false)
+    setState({ delivery: null })
+    toComp('signIn')
+  } else if (res.error) {
+    formikBag.setErrors({
+      code: res.error.code ? res.error.message : '',
+      password: (res.error.message as string).includes('password') ? res.error.message : '',
+      confirmPassword: (res.error.message as string).includes('password') ? res.error.message : ''
+    })
+    formikBag.setFieldValue('password', '', false)
+    formikBag.setSubmitting(false)
+  }
+}
+
+// * Main Component
 class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswordState> {
   public state = { delivery: null }
-
-  // *4 create onsubmit method
-  public requestCode = async (
-    values: IRequestFormValues,
-    formikBag: FormikActions<IRequestFormValues>,
-    qryRes: QueryResult<GetLocalStatesQuery>
-  ) => {
-    formikBag.setSubmitting(true)
-    // store email in local state
-    if (!qryRes.data || !qryRes.data.forms) return
-    const newData = {
-      ...qryRes.data,
-      forms: {
-        ...qryRes.data.forms,
-        input_Email: values.email
-      }
-    }
-    qryRes.client.writeData({ data: newData })
-
-    const res = await AuthProxy.requestForgotPasswordCode(values.email)
-    if (res.data) {
-      this.setState({ delivery: res.data.CodeDeliveryDetails })
-      formikBag.resetForm()
-      formikBag.setSubmitting(false)
-    } else if (res.error) {
-      formikBag.setErrors({
-        email: (res.error.message as string).includes('Username/client') ? 'Email Not Found' : ''
-      })
-      formikBag.setFieldValue('password', '', false)
-      formikBag.setSubmitting(false)
-      if (res.error && (res.error.message as string).includes('no registered/verified')) {
-        this.props.toComp('confirmSignUp') // *good
-      }
-    }
-  }
-
-  public resetPassword = async (values: IResetFormValues, formikBag: FormikActions<IResetFormValues>) => {
-    formikBag.setSubmitting(true)
-    const res = await AuthProxy.resetPassword(values.email, values.code, values.password)
-    if (res.data) {
-      formikBag.resetForm()
-      formikBag.setSubmitting(false)
-      this.setState({ delivery: null })
-      this.props.toComp('signIn') // *good
-    } else if (res.error) {
-      formikBag.setErrors({
-        code: res.error.code ? res.error.message : '',
-        password: (res.error.message as string).includes('password') ? res.error.message : '',
-        confirmPassword: (res.error.message as string).includes('password') ? res.error.message : ''
-      })
-      formikBag.setFieldValue('password', '', false)
-      formikBag.setSubmitting(false)
-    }
-  }
 
   public render() {
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
           if (qryRes.error) return <h1>Error!!</h1>
-          if (!qryRes.data || !qryRes.data.forms) return null
+          if (qryRes.loading || !qryRes.data || !qryRes.data.forms) return <h1>Loading...</h1>
           return (
             <>
-              {/* 5inject Formik component into view */}
               <h1>Forgot Password</h1>
-              <Formik
-                // get current user email from global state first
-                initialValues={{
-                  email: qryRes.data.forms.input_Email || '',
-                  code: '',
-                  password: '',
-                  confirmPassword: ''
-                }}
-                validationSchema={this.state.delivery ? schemaReset : schemaRequest}
-                onSubmit={
-                  this.state.delivery
-                    ? (values, formikBag) => this.resetPassword(values, formikBag)
-                    : (values, formikBag) => this.requestCode(values, formikBag, qryRes)
-                }
-                component={this.state.delivery ? formReset : formRequest}
-              />
+              {this.state.delivery
+                ? FormikResetPassword(qryRes.data.forms.input_Email, this.setState, this.props.toComp)
+                : FormikRequestCode(qryRes, this.setState, this.props.toComp)}
               <button onClick={() => this.props.toComp('signIn')}>Back to Sign In</button>
             </>
           )
