@@ -25,7 +25,8 @@ describe('<SignIn /> Main Suite', () => {
     const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, loading: true }
     const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    expect(wrapper.find('[children="Loading..."]').length).toBe(1)
+    // expect(wrapper.find('[children="Loading..."]').length).toBe(1)
+    expect(wrapper).toMatchSnapshot()
   })
   it('should render Error... if local state has error or no data', () => {
     const toComp = jest.fn()
@@ -33,7 +34,8 @@ describe('<SignIn /> Main Suite', () => {
     const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, error: apolloError }
     const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    expect(wrapper.find('[children="Error..."]').length).toBe(1)
+    // expect(wrapper.find('[children="Error..."]').length).toBe(1)
+    expect(wrapper).toMatchSnapshot()
   })
   describe('h1 Sign In Suite', () => {
     it('should render h1 with text Sign In', () => {
@@ -42,7 +44,8 @@ describe('<SignIn /> Main Suite', () => {
       const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
       const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-      expect(wrapper.find('[children="Sign In"]').length).toBe(1)
+      // expect(wrapper.find('[children="Sign In"]').length).toBe(1)
+      expect(wrapper.find('[children="Sign In"]')).toMatchSnapshot()
     })
   })
   describe('Forgot Password Button Suite', () => {
@@ -52,7 +55,8 @@ describe('<SignIn /> Main Suite', () => {
       const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
       const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-      expect(wrapper.find('[children="Forgot Password"]').length).toBe(1)
+      // expect(wrapper.find('[children="Forgot Password"]').length).toBe(1)
+      expect(wrapper.find('[children="Forgot Password"]')).toMatchSnapshot()
     })
     it('should call toComp(propMethod) with args: forgotPassword', () => {
       const toComp = jest.fn()
@@ -97,7 +101,7 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
     it('should render "" if qyrRes has "" email field', () => {
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      expect(mounted).toMatchSnapshot()
+      expect(mounted.find('input[name="email"]')).toMatchSnapshot()
     })
     it('should render "hanming2033@gmail.com" if qyrRes has "hanming2033@gmail.com" email field', () => {
       if (!getLocalStateData || !getLocalStateData.forms) return
@@ -106,7 +110,7 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
         data: { ...getLocalStateData, forms: { ...getLocalStateData.forms, input_Email: 'hanming2033@gmail.com' } }
       }
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      expect(mounted).toMatchSnapshot()
+      expect(mounted.find('input[name="email"]')).toMatchSnapshot()
     })
     it('should render "abc" on input change "abc"', () => {
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
@@ -137,12 +141,12 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
     const subtmitFn = jest.fn()
     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
     const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-    it('should render "" if qyrRes has "" password field', () => {
-      expect(mounted).toMatchSnapshot()
+    it('should render password input snapshot on default qryRes prop', () => {
+      expect(mounted.find('input[name="password"]')).toMatchSnapshot()
     })
-    it('should render "abc" on input change "abc"', () => {
+    it('should render "abc" on password change "abc"', () => {
       mounted.find('input[name="password"]').simulate('change', { persist: () => undefined, target: { name: 'password', value: 'abc' } })
-      expect(mounted).toMatchSnapshot()
+      expect(mounted.find('input[name="password"]').props().value).toBe('abc')
     })
     it('should render "required error" on input change "" and blur', async () => {
       mounted.find('input[name="password"]').simulate('change', { persist: () => undefined, target: { name: 'password', value: '' } })
@@ -160,17 +164,11 @@ describe('<Formik SignIn /> Main Suite(Mounting)', () => {
     })
   })
   describe('Submit Button Suite', () => {
-    it('should render a button with "Sign In"', () => {
+    it('should render a button snapshot"', () => {
       const subtmitFn = jest.fn()
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
       const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      expect(mounted).toMatchSnapshot()
-    })
-    it('should have disable state = false initially', () => {
-      const subtmitFn = jest.fn()
-      const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-      const mounted = enzyme.mount(FormikSignIn(newRes, subtmitFn, { toComp: jest.fn(), setAuth: jest.fn() }))
-      expect(mounted).toMatchSnapshot()
+      expect(mounted.find('button')).toMatchSnapshot()
     })
   })
 })
