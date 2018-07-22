@@ -1,0 +1,41 @@
+import * as React from 'react'
+import * as enzyme from 'enzyme'
+import Adapter from 'enzyme-adapter-react-16'
+import enzymeSerializer from 'enzyme-to-json/serializer'
+
+expect.addSnapshotSerializer(enzymeSerializer)
+enzyme.configure({ adapter: new Adapter() })
+
+// * always try to test component rendering instead of state unless rendering is happening in child components
+// * always try to test on interaction instead of state change unless interaction happens in child components
+// * always try to use unit test, snapshot for conditional rendering or maintance cost is high
+// * Group by feature. Each feature test on rendering and its interaction
+// * -- rendering: how props and state(prefer interaction on component unless interaction happen in children) affect this component
+// * -- interaction: how feature's interaction affect itself, other component, state(prefer rendering unless rendering in children), prop method call
+
+describe('<MainComponent /> Main Suite', () => {
+  // rendering based on different state and props of main component
+  // test here is state and props does not directly affects children
+  // test here is state and props affects more than 1 children
+  it('snapshot on loading state', () => {})
+  it('snapshot on error state', () => {})
+  it('snapshot on default state', () => {})
+  it('snapshot on component props', () => {})
+  describe('Feature 1 Suite', () => {
+    // all things related to this feature/component
+    describe('Static/Conditional Rendering', () => {
+      // rendering based on different props and state of this component
+      it('snapshot on default state/prop', () => {})
+      it('snapshot on some prop', () => {})
+      it('snapshot on some state', () => {})
+    })
+    describe('Interactions', () => {
+      // how interaction on this feature affects itself, other component, state(rendering in children), prop method call
+      it('should call prop method with args xxx', () => {})
+      it('should cause component x to render', () => {})
+      it('should cause state to change to xxx', () => {})
+      // !try to use snapshot for interaction sparingly
+      it('snapshot on some change', () => {})
+    })
+  })
+})
