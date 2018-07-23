@@ -114,21 +114,4 @@ describe('<Authenticator /> Main Suite', () => {
     const queryWrapper = enzyme.shallow(<div>{routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
     expect(queryWrapper.childAt(0).childAt(0)).toMatchSnapshot()
   })
-  // describe('Feature 1 Suite', () => {
-  //   // all things related to this feature/component
-  //   describe('Static/Conditional Rendering', () => {
-  //     // rendering based on different props and state of this component
-  //     it('snapshot on default state/prop', () => {})
-  //     it('snapshot on some prop', () => {})
-  //     it('snapshot on some state', () => {})
-  //   })
-  //   describe('Interactions', () => {
-  //     // how interaction on this feature affects itself, other component, state(rendering in children), prop method call
-  //     it('should call prop method with args xxx', () => {})
-  //     it('should cause component x to render', () => {})
-  //     it('should cause state to change to xxx', () => {})
-  //     // !try to use snapshot for interaction sparingly
-  //     it('snapshot on some change', () => {})
-  //   })
-  // })
 })

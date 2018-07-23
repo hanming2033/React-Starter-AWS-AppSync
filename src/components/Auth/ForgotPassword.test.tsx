@@ -117,30 +117,3 @@ describe('<FormikRequestCode /> Main Suite', () => {
     })
   })
 })
-
-describe('<MainComponent /> Main Suite', () => {
-  // rendering based on different state and props of main component
-  // test here is state and props does not directly affects children
-  // test here is state and props affects more than 1 children
-  it('snapshot on loading state', () => {})
-  it('snapshot on error state', () => {})
-  it('snapshot on default state', () => {})
-  it('snapshot on component props', () => {})
-  describe('Feature 1 Suite', () => {
-    // all things related to this feature/component
-    describe('Static/Conditional Rendering', () => {
-      // rendering based on different props and state of this component
-      it('snapshot on default state/prop', () => {})
-      it('snapshot on some prop', () => {})
-      it('snapshot on some state', () => {})
-    })
-    describe('Interactions', () => {
-      // how interaction on this feature affects itself, other component, state(rendering in children), prop method call
-      it('should call prop method with args xxx', () => {})
-      it('should cause component x to render', () => {})
-      it('should cause state to change to xxx', () => {})
-      // !try to use snapshot for interaction sparingly
-      it('snapshot on some change', () => {})
-    })
-  })
-})
