@@ -117,12 +117,12 @@ class Signin extends React.Component<ISignInProps, ISignInState> {
           if (qryRes.error || !qryRes.data) return <h1>Error...</h1>
 
           return (
-            <div>
+            <>
               <h1>Sign In</h1>
               {FormikSignIn(qryRes, loginSubmit, this.props)}
               <button onClick={() => this.props.toComp('forgotPassword')}>Forgot Password</button>
               <button onClick={() => this.props.toComp('signUp')}>Go To SignUp</button>
-            </div>
+            </>
           )
         }}
       </Query>

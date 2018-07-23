@@ -115,12 +115,12 @@ const Signup: React.SFC<ISignupProps> = props => {
         if (qryRes.loading) return <h3>Loading...</h3>
         if (qryRes.error || !qryRes.data) return <h3>Error...</h3>
         return (
-          <div>
+          <>
             <h1>Sign Up</h1>
             {FormikSignUp(qryRes, signupSubmit, props)}
             <button onClick={() => props.toComp('confirmSignUp')}>Confirm a Code</button>
             <button onClick={() => props.toComp('signIn')}>Go to SignIn</button>
-          </div>
+          </>
         )
       }}
     </Query>

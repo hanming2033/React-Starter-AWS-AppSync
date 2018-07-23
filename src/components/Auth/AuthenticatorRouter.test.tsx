@@ -33,22 +33,7 @@ const routeProps = {
   }
 }
 
-describe('<MainComponent /> Main Suite', () => {
-  // it('dummy', async () => {
-  //   const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
-  //   wrapper.setProps({ data: getLocalStateData })
-  //   const wrapperInstance = wrapper.instance() as Authenticator
-  //   wrapperInstance.toComp('forgotPassword')
-  //   const holder = wrapper.find(Route).prop('render')
-  //   if (!holder) return
-  //   const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
-  //   const newRes = { ...qryRes, data: getLocalStateData }
-  //   const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-  //   console.log(queryWrapper.debug())
-  // })
-  // rendering based on different state and props of main component
-  // test here is state and props does not directly affects children
-  // test here is state and props affects more than 1 children
+describe('<Authenticator /> Main Suite', () => {
   it('snapshot on no data prop', () => {
     const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
     wrapper.setProps({ data: null })
@@ -74,8 +59,8 @@ describe('<MainComponent /> Main Suite', () => {
     if (!holder) return
     const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
     const newRes = { ...qryRes, data: getLocalStateData }
-    const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    expect(queryWrapper.childAt(0)).toMatchSnapshot()
+    const queryWrapper = enzyme.shallow(<div>{routeWrapper.find(Query).prop('children')(newRes)}</div>)
+    expect(queryWrapper.childAt(0).childAt(0)).toMatchSnapshot()
   })
   it('snapshot on signIn', () => {
     const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
@@ -87,8 +72,8 @@ describe('<MainComponent /> Main Suite', () => {
     if (!holder) return
     const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
     const newRes = { ...qryRes, data: getLocalStateData }
-    const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    expect(queryWrapper.childAt(0)).toMatchSnapshot()
+    const queryWrapper = enzyme.shallow(<div>{routeWrapper.find(Query).prop('children')(newRes)}</div>)
+    expect(queryWrapper.childAt(0).childAt(0)).toMatchSnapshot()
   })
   it('snapshot on forgotPassword', () => {
     const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
@@ -100,12 +85,35 @@ describe('<MainComponent /> Main Suite', () => {
     if (!holder) return
     const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
     const newRes = { ...qryRes, data: getLocalStateData }
-    const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    expect(queryWrapper.childAt(0)).toMatchSnapshot()
+    const queryWrapper = enzyme.shallow(<div>{routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
+    expect(queryWrapper.childAt(0).childAt(0)).toMatchSnapshot()
   })
-  it('snapshot on confirmSignUp', () => {})
-  it('snapshot on requireNewPassword', () => {})
-  it('snapshot on verifyContact', () => {})
+  it('snapshot on confirmSignUp', () => {
+    const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+    wrapper.setProps({ data: getLocalStateData })
+    const wrapperInstance = wrapper.instance() as Authenticator
+    wrapperInstance.toComp('confirmSignUp')
+    wrapper.update()
+    const holder = wrapper.find(Route).prop('render')
+    if (!holder) return
+    const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
+    const newRes = { ...qryRes, data: getLocalStateData }
+    const queryWrapper = enzyme.shallow(<div>{routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
+    expect(queryWrapper.childAt(0).childAt(0)).toMatchSnapshot()
+  })
+  it('snapshot on requireNewPassword', () => {
+    const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+    wrapper.setProps({ data: getLocalStateData })
+    const wrapperInstance = wrapper.instance() as Authenticator
+    wrapperInstance.toComp('requireNewPassword')
+    wrapper.update()
+    const holder = wrapper.find(Route).prop('render')
+    if (!holder) return
+    const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
+    const newRes = { ...qryRes, data: getLocalStateData }
+    const queryWrapper = enzyme.shallow(<div>{routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
+    expect(queryWrapper.childAt(0).childAt(0)).toMatchSnapshot()
+  })
   // describe('Feature 1 Suite', () => {
   //   // all things related to this feature/component
   //   describe('Static/Conditional Rendering', () => {

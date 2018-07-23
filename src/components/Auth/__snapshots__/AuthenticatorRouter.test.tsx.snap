@@ -1,13 +1,13 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<MainComponent /> Main Suite snapshot on authenticated & /authenticate redirect 1`] = `
+exports[`<Authenticator /> Main Suite snapshot on authenticated & /authenticate redirect 1`] = `
 <Redirect
   push={false}
   to="/"
 />
 `;
 
-exports[`<MainComponent /> Main Suite snapshot on authenticated showing actual component 1`] = `
+exports[`<Authenticator /> Main Suite snapshot on authenticated showing actual component 1`] = `
 <React.Fragment>
   <h3>
     Private
@@ -24,15 +24,33 @@ exports[`<MainComponent /> Main Suite snapshot on authenticated showing actual c
 </React.Fragment>
 `;
 
-exports[`<MainComponent /> Main Suite snapshot on no data prop 1`] = `""`;
+exports[`<Authenticator /> Main Suite snapshot on confirmSignUp 1`] = `
+<h1>
+  Confirm Sign Up
+</h1>
+`;
 
-exports[`<MainComponent /> Main Suite snapshot on signIn 1`] = `
+exports[`<Authenticator /> Main Suite snapshot on forgotPassword 1`] = `
+<h1>
+  Forgot Password
+</h1>
+`;
+
+exports[`<Authenticator /> Main Suite snapshot on no data prop 1`] = `""`;
+
+exports[`<Authenticator /> Main Suite snapshot on requireNewPassword 1`] = `
+<h1>
+  Set New Pasword
+</h1>
+`;
+
+exports[`<Authenticator /> Main Suite snapshot on signIn 1`] = `
 <h1>
   Sign In
 </h1>
 `;
 
-exports[`<MainComponent /> Main Suite snapshot on signUp 1`] = `
+exports[`<Authenticator /> Main Suite snapshot on signUp 1`] = `
 <h1>
   Sign Up
 </h1>

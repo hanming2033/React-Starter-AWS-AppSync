@@ -43,7 +43,7 @@ describe('<SignIn /> Main Suite', () => {
       const setAuth = jest.fn()
       const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-      const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+      const wrapper = enzyme.shallow(<div>{queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
       // expect(wrapper.find('[children="Sign In"]').length).toBe(1)
       expect(wrapper.find('[children="Sign In"]')).toMatchSnapshot()
     })
@@ -54,7 +54,7 @@ describe('<SignIn /> Main Suite', () => {
       const setAuth = jest.fn()
       const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-      const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+      const wrapper = enzyme.shallow(<div>{queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
       // expect(wrapper.find('[children="Forgot Password"]').length).toBe(1)
       expect(wrapper.find('[children="Forgot Password"]')).toMatchSnapshot()
     })
@@ -63,7 +63,7 @@ describe('<SignIn /> Main Suite', () => {
       const setAuth = jest.fn()
       const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-      const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+      const wrapper = enzyme.shallow(<div>{queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
       wrapper.find('[children="Forgot Password"]').simulate('click')
       expect(toComp.mock.calls[0][0]).toBe('forgotPassword')
     })
@@ -74,7 +74,7 @@ describe('<SignIn /> Main Suite', () => {
       const setAuth = jest.fn()
       const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-      const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+      const wrapper = enzyme.shallow(<div>{queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
       expect(wrapper.find('[children="Go To SignUp"]').length).toBe(1)
     })
     it('should call toComp(propMethod) with args: signUp', () => {
@@ -82,7 +82,7 @@ describe('<SignIn /> Main Suite', () => {
       const setAuth = jest.fn()
       const queryWrapper = enzyme.shallow(<SignIn toComp={toComp} setAuth={setAuth} />)
       const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-      const wrapper = enzyme.shallow(queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+      const wrapper = enzyme.shallow(<div>{queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
       wrapper.find('[children="Go To SignUp"]').simulate('click')
       expect(toComp.mock.calls[0][0]).toBe('signUp')
     })
