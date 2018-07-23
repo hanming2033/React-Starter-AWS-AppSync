@@ -34,40 +34,93 @@ const routeProps = {
 }
 
 describe('<MainComponent /> Main Suite', () => {
-  it('dummy', async () => {
+  // it('dummy', async () => {
+  //   const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+  //   wrapper.setProps({ data: getLocalStateData })
+  //   const wrapperInstance = wrapper.instance() as Authenticator
+  //   wrapperInstance.toComp('forgotPassword')
+  //   const holder = wrapper.find(Route).prop('render')
+  //   if (!holder) return
+  //   const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
+  //   const newRes = { ...qryRes, data: getLocalStateData }
+  //   const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+  //   console.log(queryWrapper.debug())
+  // })
+  // rendering based on different state and props of main component
+  // test here is state and props does not directly affects children
+  // test here is state and props affects more than 1 children
+  it('snapshot on no data prop', () => {
     const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
-    wrapper.setProps({ data: getLocalStateData })
-    const wrapperInstance = wrapper.instance() as Authenticator
-    wrapperInstance.toComp('forgotPassword')
+    wrapper.setProps({ data: null })
+    expect(wrapper).toMatchSnapshot()
+  })
+  it('snapshot on authenticated & /authenticate redirect', () => {
+    const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+    wrapper.setProps({ data: { auth: { isAuthenticated: true } }, path: '/authenticate' })
+    expect(wrapper).toMatchSnapshot()
+  })
+  it('snapshot on authenticated showing actual component', () => {
+    const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+    wrapper.setProps({ data: { auth: { isAuthenticated: true } } })
+    const holder = wrapper.find(Route).prop('render')
+    if (!holder) return
+    const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
+    expect(routeWrapper).toMatchSnapshot()
+  })
+  it('snapshot on signUp', () => {
+    const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+    wrapper.setProps({ data: { auth: { isAuthenticated: false } } })
     const holder = wrapper.find(Route).prop('render')
     if (!holder) return
     const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
     const newRes = { ...qryRes, data: getLocalStateData }
     const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
-    console.log(queryWrapper.debug())
+    expect(queryWrapper.childAt(0)).toMatchSnapshot()
   })
-  // rendering based on different state and props of main component
-  // test here is state and props does not directly affects children
-  // test here is state and props affects more than 1 children
-  it('snapshot on loading state', () => {})
-  it('snapshot on error state', () => {})
-  it('snapshot on default state', () => {})
-  it('snapshot on component props', () => {})
-  describe('Feature 1 Suite', () => {
-    // all things related to this feature/component
-    describe('Static/Conditional Rendering', () => {
-      // rendering based on different props and state of this component
-      it('snapshot on default state/prop', () => {})
-      it('snapshot on some prop', () => {})
-      it('snapshot on some state', () => {})
-    })
-    describe('Interactions', () => {
-      // how interaction on this feature affects itself, other component, state(rendering in children), prop method call
-      it('should call prop method with args xxx', () => {})
-      it('should cause component x to render', () => {})
-      it('should cause state to change to xxx', () => {})
-      // !try to use snapshot for interaction sparingly
-      it('snapshot on some change', () => {})
-    })
+  it('snapshot on signIn', () => {
+    const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+    wrapper.setProps({ data: getLocalStateData })
+    const wrapperInstance = wrapper.instance() as Authenticator
+    wrapperInstance.toComp('signIn')
+    wrapper.update()
+    const holder = wrapper.find(Route).prop('render')
+    if (!holder) return
+    const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
+    const newRes = { ...qryRes, data: getLocalStateData }
+    const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+    expect(queryWrapper.childAt(0)).toMatchSnapshot()
   })
+  it('snapshot on forgotPassword', () => {
+    const wrapper = enzyme.shallow(<Authenticator component={Protected} />)
+    wrapper.setProps({ data: getLocalStateData })
+    const wrapperInstance = wrapper.instance() as Authenticator
+    wrapperInstance.toComp('forgotPassword')
+    wrapper.update()
+    const holder = wrapper.find(Route).prop('render')
+    if (!holder) return
+    const routeWrapper = enzyme.shallow(holder(routeProps) as React.ReactElement<{}>)
+    const newRes = { ...qryRes, data: getLocalStateData }
+    const queryWrapper = enzyme.shallow(routeWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>)
+    expect(queryWrapper.childAt(0)).toMatchSnapshot()
+  })
+  it('snapshot on confirmSignUp', () => {})
+  it('snapshot on requireNewPassword', () => {})
+  it('snapshot on verifyContact', () => {})
+  // describe('Feature 1 Suite', () => {
+  //   // all things related to this feature/component
+  //   describe('Static/Conditional Rendering', () => {
+  //     // rendering based on different props and state of this component
+  //     it('snapshot on default state/prop', () => {})
+  //     it('snapshot on some prop', () => {})
+  //     it('snapshot on some state', () => {})
+  //   })
+  //   describe('Interactions', () => {
+  //     // how interaction on this feature affects itself, other component, state(rendering in children), prop method call
+  //     it('should call prop method with args xxx', () => {})
+  //     it('should cause component x to render', () => {})
+  //     it('should cause state to change to xxx', () => {})
+  //     // !try to use snapshot for interaction sparingly
+  //     it('snapshot on some change', () => {})
+  //   })
+  // })
 })
