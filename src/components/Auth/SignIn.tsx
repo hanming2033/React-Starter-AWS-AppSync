@@ -7,6 +7,7 @@ import * as yup from 'yup'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
+import * as imm from 'immutable'
 
 export interface ISignInProps {
   toComp: TtoComp
@@ -58,7 +59,9 @@ export const FormikSignIn = (qryRes: QueryResult<GetLocalStatesQuery>, submit: T
         <Field type="password" name="password" placeholder="Password" />
         {formikProps.touched.password && <span>{formikProps.errors.password}</span>}
         <br />
-        <button disabled={formikProps.isSubmitting}>Sign In</button>
+        <button type="submit" disabled={formikProps.isSubmitting}>
+          Sign In
+        </button>
       </Form>
     )}
   />
@@ -115,7 +118,10 @@ class Signin extends React.Component<ISignInProps, ISignInState> {
         {qryRes => {
           if (qryRes.loading) return <h1>Loading...</h1>
           if (qryRes.error || !qryRes.data) return <h1>Error...</h1>
-
+          const map = imm.Map(qryRes.data)
+          console.log('map', map.getIn(['forms', 'input_Email']))
+          const map2 = map.setIn(['forms', 'input_Email'], 'haha')
+          console.log('map2', map2)
           return (
             <>
               <h1>Sign In</h1>

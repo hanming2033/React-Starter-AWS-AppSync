@@ -51,7 +51,8 @@ const schemaReset = yup.object().shape({
 export const FormikRequestCode = (
   qryRes: QueryResult<GetLocalStatesQuery>,
   setState: (newState: any) => void,
-  toComp: (component: string) => void
+  toComp: (component: string) => void,
+  delivery: any | undefined
 ) => (
   <Formik
     initialValues={{
@@ -61,10 +62,14 @@ export const FormikRequestCode = (
     onSubmit={(values, formikBag) => requestCode(values, formikBag, qryRes, setState, toComp)}
     render={({ errors, touched, isSubmitting }: FormikProps<IRequestFormValues>) => (
       <Form>
-        <Field name="email" placeholder="Email" />
+        <Field name="email" placeholder="Email" disabled={delivery ? true : false} />
         <span>{touched.email && errors.email}</span>
         <br />
-        <button disabled={isSubmitting}>Send Code</button>
+        {delivery ? null : (
+          <button type="submit" disabled={isSubmitting}>
+            Send Code
+          </button>
+        )}
       </Form>
     )}
   />
@@ -82,9 +87,9 @@ export const FormikResetPassword = (email: string, setState: (newState: any) => 
     onSubmit={(values, formikBag) => resetPassword(values, formikBag, setState, toComp)}
     render={({ errors, touched, isSubmitting }: FormikProps<IResetFormValues>) => (
       <Form>
-        <Field name="email" placeholder="Email" disabled />
+        {/* <Field name="email" placeholder="Email" disabled />
         <span>{touched.email && errors.email}</span>
-        <br />
+        <br /> */}
         <Field name="code" placeholder="Auth Code" />
         <span>{touched.code && errors.code}</span>
         <br />
@@ -94,7 +99,9 @@ export const FormikResetPassword = (email: string, setState: (newState: any) => 
         <Field type="password" name="confirmPassword" placeholder="Password" />
         <span>{touched.confirmPassword && errors.confirmPassword}</span>
         <br />
-        <button disabled={isSubmitting}>Reset Password</button>
+        <button type="submit" disabled={isSubmitting}>
+          Reset Password
+        </button>
       </Form>
     )}
   />
@@ -167,6 +174,7 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
   public state = { delivery: null }
 
   public render() {
+    const setState = this.setState.bind(this)
     return (
       <Query<GetLocalStatesQuery> query={GET_LOCAL_STATES} fetchPolicy="no-cache">
         {qryRes => {
@@ -175,9 +183,11 @@ class ForgotPassword extends React.Component<IForgotPasswordProps, IForgotPasswo
           return (
             <>
               <h1>Forgot Password</h1>
-              {this.state.delivery
-                ? FormikResetPassword(qryRes.data.forms.input_Email, this.setState, this.props.toComp)
-                : FormikRequestCode(qryRes, this.setState, this.props.toComp)}
+              {/* {this.state.delivery
+                ? FormikResetPassword(qryRes.data.forms.input_Email, setState, this.props.toComp)
+                : FormikRequestCode(qryRes, setState, this.props.toComp)} */}
+              {FormikRequestCode(qryRes, setState, this.props.toComp, this.state.delivery)}
+              {this.state.delivery ? FormikResetPassword(qryRes.data.forms.input_Email, setState, this.props.toComp) : null}
               <button onClick={() => this.props.toComp('signIn')}>Back to Sign In</button>
             </>
           )

@@ -9,6 +9,7 @@
     "aws-appsync-react": "^1.0.21",
     "formik": "^1.0.1",
     "graphql-tag": "^2.9.2",
+    "immutable": "^3.8.2",
     "react": "^16.4.1",
     "react-apollo": "^2.1.5",
     "react-dom": "^16.4.1",
@@ -41,7 +42,6 @@
     "graphql-tools": "^3.0.2",
     "merge-graphql-schemas": "^1.5.1",
     "typescript": "^2.9.2",
-    "waait": "^1.0.2",
-    "wait-for-expect": "^1.0.0"
+    "waait": "^1.0.2"
   }
 }

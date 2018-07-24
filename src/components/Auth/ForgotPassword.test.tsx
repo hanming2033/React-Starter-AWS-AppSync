@@ -34,8 +34,8 @@ describe('<ForgotPassword /> Main Suite', () => {
     const queryWrapper = enzyme.shallow(<ForgotPassword toComp={jest.fn()} />)
     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
     queryWrapper.setState({ delivery: { error: 'error' } })
-    const wrapper = enzyme.shallow(<div>{queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
     queryWrapper.update()
+    const wrapper = enzyme.shallow(<div>{queryWrapper.find(Query).prop('children')(newRes) as React.ReactElement<{}>}</div>)
     expect(wrapper).toMatchSnapshot()
   })
   describe('Back to Sign In Button Suite', () => {
@@ -59,7 +59,7 @@ describe('<FormikRequestCode /> Main Suite', () => {
   // test here is state and props affects more than 1 children
   it('snapshot on default state', () => {
     const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-    const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn()))
+    const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn(), undefined))
     expect(wrapper).toMatchSnapshot()
   })
   describe('Email Input Suite', () => {
@@ -69,7 +69,7 @@ describe('<FormikRequestCode /> Main Suite', () => {
           ...qryRes,
           data: { ...getLocalStateData, forms: { __typename: 'forms', input_Email: 'a@b.c' } }
         }
-        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn()))
+        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn(), undefined))
         expect(wrapper.find('input[name="email"]')).toMatchSnapshot()
       })
     })
@@ -77,7 +77,7 @@ describe('<FormikRequestCode /> Main Suite', () => {
       // how interaction on this feature affects itself, other component, state(rendering in children), prop method call
       it('should render "Email is required" error on blur ', async () => {
         const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn()))
+        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn(), undefined))
         wrapper.find('input[name="email"]').simulate('change', { persist: () => undefined, target: { name: 'email', value: '' } })
         wrapper.find('input[name="email"]').simulate('blur', { persist: () => undefined, target: { name: 'email' } })
         await wait(0)
@@ -86,7 +86,7 @@ describe('<FormikRequestCode /> Main Suite', () => {
       })
       it('should render "hello" on simulate change', async () => {
         const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn()))
+        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn(), undefined))
         wrapper.find('input[name="email"]').simulate('change', { persist: () => undefined, target: { name: 'email', value: 'hello' } })
         wrapper.find('input[name="email"]').simulate('blur', { persist: () => undefined, target: { name: 'email' } })
         await wait(0)
@@ -95,7 +95,7 @@ describe('<FormikRequestCode /> Main Suite', () => {
       })
       it('should render "Not a valid email" error on invalid email & blur', async () => {
         const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn()))
+        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn(), undefined))
         wrapper.find('input[name="email"]').simulate('change', { persist: () => undefined, target: { name: 'email', value: 'hello' } })
         wrapper.find('input[name="email"]').simulate('blur', { persist: () => undefined, target: { name: 'email' } })
         await wait(0)
@@ -104,7 +104,7 @@ describe('<FormikRequestCode /> Main Suite', () => {
       })
       it('should render no error on valid email & blur', async () => {
         const newRes: QueryResult<GetLocalStatesQuery> = { ...qryRes, data: getLocalStateData }
-        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn()))
+        const wrapper = enzyme.mount(FormikRequestCode(newRes, jest.fn(), jest.fn(), undefined))
         wrapper
           .find('input[name="email"]')
           .simulate('change', { persist: () => undefined, target: { name: 'email', value: 'hello@hi.com' } })

@@ -34,6 +34,7 @@ exports[`<Formik SignIn /> Main Suite(Mounting) Password Input Suite should rend
 exports[`<Formik SignIn /> Main Suite(Mounting) Submit Button Suite should render a button snapshot" 1`] = `
 <button
   disabled={false}
+  type="submit"
 >
   Sign In
 </button>
