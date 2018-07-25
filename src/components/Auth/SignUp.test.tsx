@@ -43,7 +43,7 @@ describe('<SignUp /> Main Suite', () => {
     beforeEach(() => {
       wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
       const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
-      queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      queryWrapper = enzyme.shallow(<div>{wrapper.find(Query).prop('children')(newRes)}</div>)
     })
     it('should render SignUp Title', () => {
       expect(queryWrapper.find('h1').text()).toBe('Sign Up')
@@ -66,7 +66,7 @@ describe('<SignUp /> Main Suite', () => {
       const toCompFn = jest.fn()
       const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
       const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
-      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      const queryWrapper = enzyme.shallow(<div>{wrapper.find(Query).prop('children')(newRes)}</div>)
       queryWrapper.find('[children="Confirm a Code"]').simulate('click')
       expect(toCompFn.mock.calls[0][0]).toBe('confirmSignUp')
     })
@@ -74,7 +74,7 @@ describe('<SignUp /> Main Suite', () => {
       const toCompFn = jest.fn()
       const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
       const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
-      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      const queryWrapper = enzyme.shallow(<div>{wrapper.find(Query).prop('children')(newRes)}</div>)
       queryWrapper.find('[children="Go to SignIn"]').simulate('click')
       expect(toCompFn.mock.calls[0][0]).toBe('signIn')
     })
@@ -82,7 +82,7 @@ describe('<SignUp /> Main Suite', () => {
       const toCompFn = jest.fn()
       const wrapper = enzyme.shallow(<SignUp toComp={toCompFn} />)
       const newRes = { ...qryRes, loading: false, error: undefined, data: getLocalStateData }
-      const queryWrapper = enzyme.shallow(wrapper.find(Query).prop('children')(newRes) as React.ReactElement<any>)
+      const queryWrapper = enzyme.shallow(<div>{wrapper.find(Query).prop('children')(newRes)}</div>)
       queryWrapper.find('[children="Confirm a Code"]').simulate('click')
       queryWrapper.find('[children="Go to SignIn"]').simulate('click')
       expect(toCompFn.mock.calls.length).toBe(2)

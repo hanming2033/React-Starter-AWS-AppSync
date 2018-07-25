@@ -1,0 +1,67 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Formik SignIn /> Main Suite(Mounting) Email Input Suite should render "" if qyrRes has "" email field 1`] = `
+<input
+  name="email"
+  onBlur={[Function]}
+  onChange={[Function]}
+  placeholder="Email"
+  value=""
+/>
+`;
+
+exports[`<Formik SignIn /> Main Suite(Mounting) Email Input Suite should render "hanming2033@gmail.com" if qyrRes has "hanming2033@gmail.com" email field 1`] = `
+<input
+  name="email"
+  onBlur={[Function]}
+  onChange={[Function]}
+  placeholder="Email"
+  value="hanming2033@gmail.com"
+/>
+`;
+
+exports[`<Formik SignIn /> Main Suite(Mounting) Password Input Suite should render password input snapshot on default qryRes prop 1`] = `
+<input
+  name="password"
+  onBlur={[Function]}
+  onChange={[Function]}
+  placeholder="Password"
+  type="password"
+  value=""
+/>
+`;
+
+exports[`<Formik SignIn /> Main Suite(Mounting) Submit Button Suite should render a button snapshot" 1`] = `
+<button
+  disabled={false}
+  type="submit"
+>
+  Sign In
+</button>
+`;
+
+exports[`<SignIn /> Main Suite Forgot Password Button Suite should render Forgot Password 1`] = `
+<button
+  onClick={[Function]}
+>
+  Forgot Password
+</button>
+`;
+
+exports[`<SignIn /> Main Suite h1 Sign In Suite should render h1 with text Sign In 1`] = `
+<h1>
+  Sign In
+</h1>
+`;
+
+exports[`<SignIn /> Main Suite should render Error... if local state has error or no data 1`] = `
+<h1>
+  Error...
+</h1>
+`;
+
+exports[`<SignIn /> Main Suite should render Loading... if local state has loading 1`] = `
+<h1>
+  Loading...
+</h1>
+`;

@@ -39,7 +39,7 @@ const appSyncLink = createAppSyncLink({
   complexObjectsCredentials: ''
 })
 
-const link = ApolloLink.from([stateLink, appSyncLink])
+export const link = ApolloLink.from([stateLink, appSyncLink])
 
 // client to write queries without being in a component
 // disableOffline should be added in the first arg

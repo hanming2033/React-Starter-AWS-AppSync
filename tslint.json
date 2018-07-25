@@ -1,7 +1,7 @@
 {
   "extends": ["tslint:latest", "tslint-react", "tslint-config-prettier"],
   "linterOptions": {
-    "exclude": ["config/**/*.js", "node_modules/**/*.ts", "node_modules/*", "src/AppSync.js"]
+    "exclude": ["config/**/*.js", "node_modules/**/*.ts", "node_modules/*", "src/AppSync.js", "**/AppData/Local/**/*.ts*"]
   },
 
   "rules": {

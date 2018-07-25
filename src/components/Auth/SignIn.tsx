@@ -1,13 +1,13 @@
 import * as React from 'react'
-import { Form, Field, Formik, FormikActions, FormikProps } from 'formik'
+import { Form, Field, Formik, FormikActions } from 'formik'
 import { Query, QueryResult } from 'react-apollo'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
-import { RouteComponentProps } from 'react-router'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
+import { updateCacheForm } from '../../utils/AuthUtils'
 
 export interface ISignInProps {
   toComp: TtoComp
@@ -54,12 +54,14 @@ export const FormikSignIn = (qryRes: QueryResult<GetLocalStatesQuery>, submit: T
     render={formikProps => (
       <Form>
         <Field name="email" placeholder="Email" />
-        {formikProps.touched.email && formikProps.errors.email}
+        {formikProps.touched.email && <span>{formikProps.errors.email}</span>}
         <br />
         <Field type="password" name="password" placeholder="Password" />
-        {formikProps.touched.password && formikProps.errors.password}
+        {formikProps.touched.password && <span>{formikProps.errors.password}</span>}
         <br />
-        <button disabled={formikProps.isSubmitting}>Sign In</button>
+        <button type="submit" disabled={formikProps.isSubmitting}>
+          Sign In
+        </button>
       </Form>
     )}
   />
@@ -74,16 +76,8 @@ const loginSubmit = async (
 ) => {
   formikBag.setSubmitting(true)
   // store username in apollo link state on submit
-  if (qryRes.data && qryRes.data.forms) {
-    const newData: GetLocalStatesQuery = {
-      ...qryRes.data,
-      forms: {
-        ...qryRes.data.forms,
-        input_Email: values.email
-      }
-    }
-    qryRes.client.writeData({ data: newData })
-  }
+  updateCacheForm(qryRes, 'input_Email', values.email)
+
   const res = await AuthProxy.signIn(values.email, values.password)
   if (res.data) {
     if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
@@ -101,7 +95,6 @@ const loginSubmit = async (
       email: res.error.code ? res.error.message : '',
       password: res.error.code === 'NotAuthorizedException' ? res.error.message : ''
     })
-
     if (res.error.code === 'UserNotConfirmedException') {
       props.toComp('confirmSignUp')
     }
@@ -116,14 +109,13 @@ class Signin extends React.Component<ISignInProps, ISignInState> {
         {qryRes => {
           if (qryRes.loading) return <h1>Loading...</h1>
           if (qryRes.error || !qryRes.data) return <h1>Error...</h1>
-
           return (
-            <div>
+            <>
               <h1>Sign In</h1>
               {FormikSignIn(qryRes, loginSubmit, this.props)}
               <button onClick={() => this.props.toComp('forgotPassword')}>Forgot Password</button>
               <button onClick={() => this.props.toComp('signUp')}>Go To SignUp</button>
-            </div>
+            </>
           )
         }}
       </Query>

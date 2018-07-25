@@ -10,7 +10,7 @@ import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery, SetAuthMutation } from '../../data/graphql-types'
 import { ChildProps, graphql, compose } from 'react-apollo'
 import VerifyContact from './VerifyContact'
-import { IVerification, ICognitoUserSession, ICognitoUser } from './AuthProxies/AuthTypes'
+import { IVerification, ICognitoUser } from './AuthProxies/AuthTypes'
 import { SET_AUTH } from '../../data/actions/Mutations'
 import { JS } from 'aws-amplify'
 
@@ -39,18 +39,16 @@ interface IProtectedRouteState {
   userData: ICognitoUser | null
   componentToShow: validComponents
   verification: IVerification
-  currentSession: ICognitoUserSession | null
 }
 
-class Authenticator extends React.Component<
+export class Authenticator extends React.Component<
   ChildProps<IAuthenticatorProps & RouteProps, GetLocalStatesQuery & SetAuthMutation>,
   IProtectedRouteState
 > {
   public state = {
     userData: null,
     componentToShow: 'signUp' as validComponents,
-    verification: { verified: {}, unverified: {} },
-    currentSession: null
+    verification: { verified: {}, unverified: {} }
   }
 
   public toComp: TtoComp = (component, userData) => {
@@ -70,7 +68,7 @@ class Authenticator extends React.Component<
   public componentDidMount() {
     AuthProxy.checkAuthState()
       .then(res => {
-        console.log('Authenticator Router On Mount: ', res)
+        // console.log('Authenticator Router On Mount: ', res)
         return res
       })
       .then(res => {

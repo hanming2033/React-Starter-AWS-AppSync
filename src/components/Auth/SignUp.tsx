@@ -6,6 +6,7 @@ import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import { GetLocalStatesQuery } from '../../data/graphql-types'
 import { TtoComp } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
+import { updateCacheForm } from '../../utils/AuthUtils'
 
 export interface ISignupProps {
   toComp: TtoComp
@@ -71,16 +72,7 @@ export const FormikSignUp = (qryRes: QueryResult<GetLocalStatesQuery>, submit: T
 const signupSubmit: TsubmitFn = async (values, formikBag, qryRes, props) => {
   formikBag.setSubmitting(true)
   // store email in link state
-  if (qryRes.data && qryRes.data.forms) {
-    const newData = {
-      ...qryRes.data,
-      forms: {
-        ...qryRes.data.forms,
-        input_Email: values.email
-      }
-    }
-    qryRes.client.writeData({ data: newData })
-  }
+  updateCacheForm(qryRes, 'input_Email', values.email)
 
   const res = await AuthProxy.signUp({
     username: values.email,
@@ -115,12 +107,12 @@ const Signup: React.SFC<ISignupProps> = props => {
         if (qryRes.loading) return <h3>Loading...</h3>
         if (qryRes.error || !qryRes.data) return <h3>Error...</h3>
         return (
-          <div>
+          <>
             <h1>Sign Up</h1>
             {FormikSignUp(qryRes, signupSubmit, props)}
             <button onClick={() => props.toComp('confirmSignUp')}>Confirm a Code</button>
             <button onClick={() => props.toComp('signIn')}>Go to SignIn</button>
-          </div>
+          </>
         )
       }}
     </Query>

@@ -13,10 +13,10 @@ export const checkAuthState = async (): Promise<ICheckAuthStateResult> => {
     // get current user
     const user = await Auth.currentAuthenticatedUser()
 
-    console.log('Proxy checkAuthState Success ', user)
+    // console.log('Proxy checkAuthState Success ', user)
     return { data: { user } }
   } catch (error) {
-    console.log('Proxy checkAuthState Fail : ', error)
+    // console.log('Proxy checkAuthState Fail : ', error)
     return { error }
   }
 }

@@ -1,7 +1,8 @@
 import { GetLocalStatesQuery } from '../data/graphql-types'
 import { QueryResult } from 'react-apollo'
 import { ApolloError } from 'apollo-client'
-import { client } from '../AWSApolloClient'
+import { link } from '../AWSApolloClient'
+import AWSAppSyncClient from 'aws-appsync/lib'
 
 export const getLocalStateData: GetLocalStatesQuery = {
   auth: {
@@ -18,8 +19,10 @@ export const getLocalStateData: GetLocalStatesQuery = {
   }
 }
 
+export const stubClient = new AWSAppSyncClient({} as any, { link } as any)
+
 export const qryRes: QueryResult<GetLocalStatesQuery> = {
-  client,
+  client: stubClient,
   data: undefined,
   error: undefined,
   loading: false,
@@ -31,6 +34,13 @@ export const qryRes: QueryResult<GetLocalStatesQuery> = {
   refetch: jest.fn(),
   fetchMore: jest.fn(),
   updateQuery: jest.fn()
+}
+
+export const mtnRes = {
+  data: undefined,
+  error: undefined,
+  loading: false,
+  called: false
 }
 
 export const apolloError: ApolloError = {
