@@ -6,6 +6,7 @@ import { GET_LOCAL_STATES } from '../../data/actions/Queries'
 import * as yup from 'yup'
 import { TtoComp } from './AuthenticatorRouter'
 import { AuthProxy } from './AuthProxies/AuthProxy'
+import { updateCacheForm } from '../../utils/AuthUtils'
 
 export interface IForgotPasswordProps {
   toComp: TtoComp
@@ -117,15 +118,7 @@ const requestCode = async (
 ) => {
   formikBag.setSubmitting(true)
   // store email in local state
-  if (!qryRes.data || !qryRes.data.forms) return
-  const newData = {
-    ...qryRes.data,
-    forms: {
-      ...qryRes.data.forms,
-      input_Email: values.email
-    }
-  }
-  qryRes.client.writeData({ data: newData })
+  updateCacheForm(qryRes, 'input_Email', values.email)
 
   const res = await AuthProxy.requestForgotPasswordCode(values.email)
   if (res.data) {

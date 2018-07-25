@@ -7,7 +7,7 @@ import * as yup from 'yup'
 import { AuthProxy } from './AuthProxies/AuthProxy'
 import { TtoComp, TsetAuth } from './AuthenticatorRouter'
 import { verifyUser } from './AuthProxies/verifyUser'
-import * as imm from 'immutable'
+import { updateCacheForm } from '../../utils/AuthUtils'
 
 export interface ISignInProps {
   toComp: TtoComp
@@ -76,16 +76,8 @@ const loginSubmit = async (
 ) => {
   formikBag.setSubmitting(true)
   // store username in apollo link state on submit
-  if (qryRes.data && qryRes.data.forms) {
-    const newData: GetLocalStatesQuery = {
-      ...qryRes.data,
-      forms: {
-        ...qryRes.data.forms,
-        input_Email: values.email
-      }
-    }
-    qryRes.client.writeData({ data: newData })
-  }
+  updateCacheForm(qryRes, 'input_Email', values.email)
+
   const res = await AuthProxy.signIn(values.email, values.password)
   if (res.data) {
     if (res.data.challengeName === 'SMS_MFA' || res.data.challengeName === 'SOFTWARE_TOKEN_MFA') {
@@ -103,7 +95,6 @@ const loginSubmit = async (
       email: res.error.code ? res.error.message : '',
       password: res.error.code === 'NotAuthorizedException' ? res.error.message : ''
     })
-
     if (res.error.code === 'UserNotConfirmedException') {
       props.toComp('confirmSignUp')
     }
@@ -118,10 +109,6 @@ class Signin extends React.Component<ISignInProps, ISignInState> {
         {qryRes => {
           if (qryRes.loading) return <h1>Loading...</h1>
           if (qryRes.error || !qryRes.data) return <h1>Error...</h1>
-          const map = imm.Map(qryRes.data)
-          console.log('map', map.getIn(['forms', 'input_Email']))
-          const map2 = map.setIn(['forms', 'input_Email'], 'haha')
-          console.log('map2', map2)
           return (
             <>
               <h1>Sign In</h1>
